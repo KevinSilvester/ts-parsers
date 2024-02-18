@@ -2,8 +2,8 @@ use std::fs::File;
 use std::io::Cursor;
 use std::path::Path;
 
-use reqwest::Client;
 use reqwest::redirect::Policy;
+use reqwest::Client;
 
 use crate::c_println;
 

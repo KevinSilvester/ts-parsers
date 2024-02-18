@@ -1,11 +1,11 @@
 pub mod command;
-pub mod renderer;
 pub mod fs;
 pub mod http;
 mod paths;
+pub mod renderer;
 
 pub use self::paths::Paths;
-    
+
 #[macro_export]
 macro_rules! c_println {
     (red, $($arg:tt)*) => {{

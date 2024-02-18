@@ -48,14 +48,18 @@ impl Parsers {
         self.list.get(parser)
     }
 
-    pub fn validate_parsers(&self, parsers: &Vec<String>, tag: &str) -> anyhow::Result<()> {
+    pub fn validate_parsers(&self, parsers: &[String], tag: &str) -> anyhow::Result<()> {
         let invalid_parsers: Vec<_> = parsers
             .iter()
             .filter(|p| !self.list.contains_key(*p))
             .collect();
 
         if !invalid_parsers.is_empty() {
-            c_println!(red, "Invalid parsers for release {tag}: {:?}", invalid_parsers);
+            c_println!(
+                red,
+                "Invalid parsers for release {tag}: {:?}",
+                invalid_parsers
+            );
             anyhow::bail!("Invalid parsers: {:?}", invalid_parsers);
         }
         Ok(())

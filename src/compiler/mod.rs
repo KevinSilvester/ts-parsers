@@ -1,7 +1,7 @@
-mod compiler;
 mod clang;
+mod compiler;
 mod zig;
 
-pub use self::compiler::Compiler;
 pub use self::clang::Clang;
-pub use self::zig::{ZigTargets, Zig};
+pub use self::compiler::Compiler;
+pub use self::zig::{Zig, ZigTargets};

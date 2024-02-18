@@ -5,9 +5,10 @@ use std::path::{Path, PathBuf};
 use zip::ZipArchive;
 
 use crate::{
+    c_println,
     compiler::{Compiler, ZigTargets},
     data::{parsers::ParserInfo, state::State},
-    utils::{command::run_command, http::download_file}, c_println,
+    utils::{command::run_command, http::download_file},
 };
 
 #[derive(Debug)]
