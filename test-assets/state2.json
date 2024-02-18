@@ -1,0 +1,16 @@
+{
+  "last_updated": "2024-02-16T02:23:21.422508037Z",
+  "current_tag": "",
+  "restore_points": [],
+  "parsers": {
+    "new_lang": {
+      "last_modified": "2024-02-16T14:43:46.869264036Z",
+      "revision": "revision",
+      "url": "https://url.com",
+      "tag": "tag",
+      "locked": false,
+      "still_supported": true,
+      "install_method": "Copmiled"
+    }
+  }
+}
