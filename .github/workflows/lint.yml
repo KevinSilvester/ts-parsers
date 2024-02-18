@@ -1,0 +1,41 @@
+name: lint+test
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+
+jobs:
+  lint-rust:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["windows-latest", "macos-latest", "ubuntu-latest"]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust Toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: rustfmt
+
+      - name: Configure Rust Cache
+        run: |
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+
+      - name: Setup Rust Cache
+        uses: mozilla-actions/sccache-action@v0.0.3
+
+      - name: Check formattting
+        run: |
+          cargo fmt --all -- --check
+
+      - name: Run Tests
+        run: |
+          cargo test
