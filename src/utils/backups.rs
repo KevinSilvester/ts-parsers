@@ -86,27 +86,39 @@ impl Backups {
 mod tests {
     use crate::data::{parsers::ParserInfo, state::ParserInstallMethod};
     use crate::utils::fs::remove_all;
-    use crate::utils::PATHS;
 
     use super::*;
 
-    #[test]
-    fn test_create_backup() {
-        let mut state = State::new().unwrap();
-        let parser_info = ParserInfo {
+    fn dummy_parser_info() -> ParserInfo {
+        ParserInfo {
             url: "https://test.com".to_owned(),
             files: vec!["src/test.c".to_owned()],
             location: None,
             revision: "test".to_owned(),
             generate_from_grammar: false,
-        };
+        }
+    }
+
+    #[test]
+    fn test_create_backup() {
+        let mut state = State::new().unwrap();
+        let parser_info = dummy_parser_info();
         state.add_parser("Test", "test", ParserInstallMethod::Compile, &parser_info);
 
         // check if backup was created
-        let backup_dir = PATHS.ts_parsers.join("backups");
+        let cwd = Path::new("tests").join("outputs").join("unit-tests");
+        let backup_dir = cwd.join("backups");
+        let parsers_dir = cwd.join("parsers");
+
         if backup_dir.exists() {
             remove_all(&backup_dir).unwrap();
         }
+
+        if parsers_dir.exists() {
+            remove_all(&parsers_dir).unwrap();
+        }
+        std::fs::create_dir_all(&parsers_dir).unwrap();
+        std::fs::write(parsers_dir.join("test.txt"), "test").unwrap();
 
         Backups::create_backup(&mut state, "test").unwrap();
 
@@ -123,7 +135,5 @@ mod tests {
                     .contains("[test]"));
             }
         }
-
-        remove_all(&backup_dir).unwrap();
     }
 }

@@ -70,7 +70,7 @@ impl State {
         })
     }
 
-    pub fn all_installed(&self, parsers: &Vec<String>) -> (Vec<String>, Vec<String>) {
+    pub fn check_all_installed(&self, parsers: &Vec<String>) -> (Vec<String>, Vec<String>) {
         let mut not_installed = Vec::new();
         let mut is_installed = Vec::new();
         for parser in parsers {
@@ -80,10 +80,6 @@ impl State {
             }
         }
         (is_installed, not_installed)
-    }
-
-    pub fn get_parser(&self, name: &str) -> Option<&ParserState> {
-        self.parsers.get(name)
     }
 
     pub fn add_parser(
@@ -104,22 +100,30 @@ impl State {
         self.parsers.insert(name.to_owned(), parser_state);
     }
 
-    pub fn remove_parser(&mut self, name: &str) -> anyhow::Result<()> {
-        self.parsers.remove(name);
-        Ok(())
+    pub fn check_parser(&self, name: &str) -> bool {
+        self.parsers.contains_key(name)
     }
 
-    pub fn update_parser(&mut self, name: &str, mut parser: ParserState) -> anyhow::Result<()> {
-        parser.last_modified = Utc::now();
-        *self.parsers.get_mut(name).unwrap() = parser;
-        Ok(())
-    }
+    // pub fn get_parser(&self, name: &str) -> Option<&ParserState> {
+    //     self.parsers.get(name)
+    // }
 
-    pub fn toggle_lock(&mut self, name: &str) -> anyhow::Result<()> {
-        let parser = self.parsers.get_mut(name).unwrap();
-        self.parsers.get_mut(name).unwrap().locked = !parser.locked;
-        Ok(())
-    }
+    // pub fn remove_parser(&mut self, name: &str) -> anyhow::Result<()> {
+    //     self.parsers.remove(name);
+    //     Ok(())
+    // }
+
+    // pub fn update_parser(&mut self, name: &str, mut parser: ParserState) -> anyhow::Result<()> {
+    //     parser.last_modified = Utc::now();
+    //     *self.parsers.get_mut(name).unwrap() = parser;
+    //     Ok(())
+    // }
+
+    // pub fn toggle_lock(&mut self, name: &str) -> anyhow::Result<()> {
+    //     let parser = self.parsers.get_mut(name).unwrap();
+    //     self.parsers.get_mut(name).unwrap().locked = !parser.locked;
+    //     Ok(())
+    // }
 
     pub fn append_restore_point(&mut self, restore_point: RestorePoint) {
         self.restore_points.push_back(restore_point);
@@ -141,23 +145,26 @@ impl State {
 
 #[cfg(test)]
 mod tests {
-    // use super::*;
+    use super::*;
 
-    // #[test]
-    // fn test_parser_add() {
-    //     let new_lang = "new_lang".to_string();
-    //     let new_lang_state = ParserState {
-    //         revision: "revision".to_string(),
-    //         tag: "tag".to_string(),
-    //         url: "https://url.com".to_string(),
-    //         install_method: ParserInstallMethod::Copmiled,
-    //         ..ParserState::default()
-    //     };
+    fn dummy_parser_info() -> ParserInfo {
+        ParserInfo {
+            url: "https://test.com".to_owned(),
+            files: vec!["src/test.c".to_owned()],
+            location: None,
+            revision: "test".to_owned(),
+            generate_from_grammar: false,
+        }
+    }
 
-    //     let mut state = State::new().unwrap();
-    //     state.add_parser(new_lang.clone(), new_lang_state).unwrap();
-    //     assert!(state.check_parser(&new_lang));
-    // }
+    #[test]
+    fn test_parser_add() {
+        let mut state = State::new().unwrap();
+        let parser_info = dummy_parser_info();
+        state.add_parser("Test", "test", ParserInstallMethod::Compile, &parser_info);
+
+        assert!(state.check_parser("Test"));
+    }
 
     // #[test]
     // fn test_parser_remove() {

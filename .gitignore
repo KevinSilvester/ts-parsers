@@ -1,4 +1,3 @@
 /target
-/test-assets/backups
-/test-assets/parsers
-/test-assets/state.json
+/tests/outputs/*
+!tests/outputs/.gitkeep

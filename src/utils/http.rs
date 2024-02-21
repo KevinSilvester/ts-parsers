@@ -22,20 +22,3 @@ pub async fn download_file(url: &str, destination: impl AsRef<Path>) -> anyhow::
 
     Ok(())
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[tokio::test]
-    async fn test_download_file() {
-        let url = "https://github.com/MunifTanjim/tree-sitter-lua/archive/9668709211b2e683f27f414454a8b51bf0a6bda1.zip";
-        let download_location = std::env::current_dir()
-            .unwrap()
-            .join("test-assets")
-            .join("lua.zip");
-        download_file(url, &download_location).await.unwrap();
-        assert!(download_location.exists());
-        std::fs::remove_file(&download_location).unwrap();
-    }
-}

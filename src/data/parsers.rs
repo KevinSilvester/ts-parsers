@@ -78,6 +78,8 @@ impl Parsers {
 
 #[cfg(test)]
 mod tests {
+    use std::path::Path;
+
     use super::*;
 
     const TAG: &str = "v7e9139d";
@@ -87,13 +89,9 @@ mod tests {
         let mut parsers = Parsers::new().unwrap();
         parsers.fetch_list(&Some(TAG.to_string())).await.unwrap();
 
-        // print the cwd
-        println!("{:?}", std::env::current_dir().unwrap());
-
         let json = std::fs::read_to_string(
-            std::env::current_dir()
-                .unwrap()
-                .join("test-assets")
+            Path::new("tests")
+                .join("fixtures")
                 .join(format!("parsers-{TAG}.json")),
         )
         .unwrap();

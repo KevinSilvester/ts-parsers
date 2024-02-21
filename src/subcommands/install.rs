@@ -115,7 +115,7 @@ impl Subcommand for Install {
 
         let langs: &Vec<String> = &self.select_langs(&parsers)?;
         let tag = self.select_tag(&changelog);
-        let (is_installed, _) = state.all_installed(langs);
+        let (is_installed, _) = state.check_all_installed(langs);
 
         if !self.force && !is_installed.is_empty() {
             c_println!(amber, "Parsers are already installed: {:?}", is_installed);
@@ -166,88 +166,5 @@ impl Subcommand for Install {
 impl Drop for Install {
     fn drop(&mut self) {
         self.cleanup().unwrap();
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use assert_cmd::Command;
-
-    use crate::utils::fs::remove_all;
-
-    fn setup() {
-        let cwd = std::env::current_dir().unwrap();
-        let test_assets = cwd.join("test-assets");
-
-        let paths = [
-            test_assets.join("backups"),
-            test_assets.join("parsers"),
-            test_assets.join("state.json"),
-            test_assets.join("wanted-parsers.txt"),
-        ];
-        for path in paths.iter() {
-            if path.exists() {
-                remove_all(path).unwrap();
-            }
-        }
-
-        std::fs::copy(
-            test_assets.join("state-tmpl.json"),
-            test_assets.join("state.json"),
-        )
-        .unwrap();
-        std::fs::write(
-            test_assets.join("wanted-parsers.txt"),
-            "rust\nlua\nblueprint\nmarkdown",
-        )
-        .unwrap();
-    }
-
-    #[test]
-    fn test_install_specific() {
-        setup();
-        let mut cmd = Command::cargo_bin("ts-parsers").unwrap();
-        cmd.env("TS_PARSERS_TEST", "true");
-        cmd.args(["install", "rust", "lua", "blueprint", "markdown"]);
-        cmd.assert().success();
-    }
-
-    #[test]
-    fn test_install_wanted() {
-        setup();
-        let mut cmd = Command::cargo_bin("ts-parsers").unwrap();
-        cmd.env("TS_PARSERS_TEST", "true");
-        cmd.args(["install", "--wanted"]);
-        cmd.assert().success();
-    }
-
-    #[test]
-    fn test_install_with_zig() {
-        setup();
-        let mut cmd = Command::cargo_bin("ts-parsers").unwrap();
-        cmd.env("TS_PARSERS_TEST", "true");
-        cmd.args([
-            "install",
-            "--compiler",
-            "zig",
-            "--target",
-            "x86_64-windows",
-            "rust",
-        ]);
-        cmd.assert().success();
-    }
-
-    #[test]
-    fn test_force_install() {
-        setup();
-        let mut cmd = Command::cargo_bin("ts-parsers").unwrap();
-        cmd.env("TS_PARSERS_TEST", "true");
-        cmd.args(["install", "--wanted"]);
-        cmd.assert().success();
-
-        let mut cmd = Command::cargo_bin("ts-parsers").unwrap();
-        cmd.env("TS_PARSERS_TEST", "true");
-        cmd.args(["install", "--wanted", "--force"]);
-        cmd.assert().success();
     }
 }

@@ -1,0 +1,69 @@
+{
+  "title": "ts-parsers state",
+  "type": "object",
+  "properties": {
+    "last_updated": {
+      "type": "string"
+    },
+    "restore_points": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "date",
+          "location"
+        ]
+      }
+    },
+    "parsers": {
+      "type": "object",
+      "patternProperties": {
+        "^.*$": {
+          "type": "object",
+          "properties": {
+            "last_modified": {
+              "type": "string"
+            },
+            "revision": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            },
+            "tag": {
+              "type": "string"
+            },
+            "locked": {
+              "type": "boolean"
+            },
+            "install_method": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "last_modified",
+            "revision",
+            "url",
+            "tag",
+            "locked",
+            "install_method"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "last_updated",
+    "restore_points",
+    "parsers"
+  ]
+}

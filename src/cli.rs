@@ -44,24 +44,4 @@ impl Cli {
         }
         Ok(())
     }
-
-    // pub fn cleanup(&self) -> anyhow::Result<()> {
-    //     match self {
-    //         Self::Compile(cmd) => cmd.cleanup()?,
-    //         Self::Install(cmd) => cmd.cleanup()?,
-    //         _ => {}
-    //     }
-    //     Ok(())
-    // }
 }
-
-// impl Drop for Cli {
-//     fn drop(&mut self) {
-//         // self.cleanup().unwrap();
-//         match self {
-//             Self::Compile(cmd) => cmd.cleanup().unwrap(),
-//             Self::Install(cmd) => cmd.cleanup().unwrap(),
-//             _ => {}
-//         }
-//     }
-// }

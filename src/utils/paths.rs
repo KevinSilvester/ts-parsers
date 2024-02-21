@@ -31,11 +31,11 @@ impl Paths {
             }
         }
 
-        // variable is set with `assert_cmd` for subcommand testing
-        match std::env::var("TS_PARSERS_TEST") {
-            Ok(_) => Self {
-                nvim_config: std::env::current_dir().unwrap().join("test-assets"),
-                ts_parsers: std::env::current_dir().unwrap().join("test-assets"),
+        // variable is set with `assert_cmd` for subcommand integration tests
+        match std::env::var("TS_PARSERS_TEST_DIR") {
+            Ok(dir) => Self {
+                nvim_config: PathBuf::from(&dir),
+                ts_parsers: PathBuf::from(&dir),
             },
             Err(_) => Self {
                 nvim_config: local_config_dir.join("nvim"),
@@ -49,8 +49,8 @@ impl Paths {
 impl Paths {
     pub fn new() -> Self {
         Self {
-            nvim_config: std::env::current_dir().unwrap().join("test-assets"),
-            ts_parsers: std::env::current_dir().unwrap().join("test-assets"),
+            nvim_config: PathBuf::from("tests").join("outputs").join("unit-tests"),
+            ts_parsers: PathBuf::from("tests").join("outputs").join("unit-tests"),
         }
     }
 }
