@@ -1,4 +1,4 @@
-name: lint+test
+name: test
 
 on:
   push:
@@ -7,7 +7,25 @@ on:
     branches: ["master"]
 
 jobs:
-  lint-rust:
+  rustfmt:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          components: rustfmt
+
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+  test:
     strategy:
       fail-fast: false
       matrix:
@@ -21,19 +39,11 @@ jobs:
       - name: Setup Zig
         uses: goto-bus-stop/setup-zig@v2
 
-      - name: Setup Rust Toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          components: rustfmt
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
 
-      - name: Configure Rust Cache
-        run: |
-          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
-          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
-
-      - name: Setup Rust Cache
-        uses: mozilla-actions/sccache-action@v0.0.3
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
@@ -44,8 +54,7 @@ jobs:
       - name: Set pnpm store directory
         id: pnpm-cache
         shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
       - name: Setup pnpm cache
         uses: actions/cache@v3
@@ -57,13 +66,7 @@ jobs:
 
       - name: Install script deps
         shell: bash
-        run: |
-          pnpm add -g tree-sitter-cli
-
-      - name: Check formattting
-        run: |
-          cargo fmt --all -- --check
+        run: pnpm add -g tree-sitter-cli
 
       - name: Run Tests
-        run: |
-          cargo test
+        run: cargo test
