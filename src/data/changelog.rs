@@ -46,13 +46,15 @@ impl ChangeLog {
         self.get_latest().map(|entry| entry.tag.clone())
     }
 
-    pub fn check_entry(&self, tag: &str) -> anyhow::Result<()> {
-        match self.entries.iter().any(|entry| entry.tag == tag) {
+    pub fn check_entry(&self, tag: &Option<String>) -> anyhow::Result<()> {
+        let tag = match tag {
+            Some(tag) => tag,
+            None => return Ok(()),
+        };
+
+        match self.entries.iter().any(|entry| &entry.tag == tag) {
             true => Ok(()),
-            false => {
-                c_println!(red, "Tag {} not found in changelog", tag);
-                Err(anyhow::anyhow!("Tag not found in changelog"))
-            }
+            false => Err(anyhow::anyhow!("Tag {} not found in changelog", tag)),
         }
     }
 

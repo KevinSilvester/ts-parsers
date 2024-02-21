@@ -13,3 +13,24 @@ pub fn copy_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> anyhow::Result<
     }
     Ok(())
 }
+
+pub fn remove_all(path: &Path) -> anyhow::Result<()> {
+    if path.is_file() {
+        std::fs::remove_file(path)?;
+        return Ok(());
+    }
+
+    for entry in path.read_dir()? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_dir() {
+            remove_all(&path)?;
+        } else {
+            std::fs::remove_file(&path)?;
+        }
+    }
+
+    std::fs::remove_dir(path)?;
+
+    Ok(())
+}

@@ -1,10 +1,12 @@
+mod backups;
 pub mod command;
 pub mod fs;
 pub mod http;
 mod paths;
 pub mod renderer;
 
-pub use self::paths::Paths;
+pub use self::backups::Backups;
+pub use self::paths::PATHS;
 
 #[macro_export]
 macro_rules! c_println {

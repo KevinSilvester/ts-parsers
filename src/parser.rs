@@ -7,35 +7,31 @@ use zip::ZipArchive;
 use crate::{
     c_println,
     compiler::{Compiler, ZigTargets},
-    data::{parsers::ParserInfo, state::State},
+    data::parsers::ParserInfo,
     utils::{command::run_command, http::download_file},
 };
+
+fn download_url(parser_info: &ParserInfo) -> String {
+    match parser_info.url.contains("gitlab") {
+        true => {
+            let url = parser_info.url.trim_end_matches(".git");
+            let repo_name = url.split('/').last().unwrap();
+            format!(
+                "{url}/-/archive/{}/{repo_name}-{}.zip",
+                parser_info.revision, parser_info.revision
+            )
+        }
+        false => {
+            let url = parser_info.url.trim_end_matches(".git");
+            format!("{url}/archive/{}.zip", parser_info.revision)
+        }
+    }
+}
 
 #[derive(Debug)]
 pub struct Parser;
 
 impl Parser {
-    // pub async fn install(
-    //     parser_info: &ParserInfo,
-    //     compiler: &Box<dyn Compiler + Send + Sync>,
-    //     target: &Option<ZigTargets>,
-    //     state: &State,
-    // ) -> anyhow::Result<()> {
-    //     Ok(())
-    // }
-
-    // pub async fn uninstall(parser_info: &ParserInfo, state: &State) -> anyhow::Result<()> {
-    //     Ok(())
-    // }
-    // pub async fn update(
-    //     parser_info: &ParserInfo,
-    //     compiler: &Box<dyn Compiler + Send + Sync>,
-    //     target: &Option<ZigTargets>,
-    //     state: &State,
-    // ) -> anyhow::Result<()> {
-    //     Ok(())
-    // }
-
     pub async fn compile(
         lang: &str,
         parser_info: &ParserInfo,
@@ -46,17 +42,7 @@ impl Parser {
         let tmp_dir = tempfile::tempdir()?;
         let download_location = tmp_dir.path().join(format!("{lang}.zip"));
 
-        let download_url = match parser_info.url.contains("gitlab") {
-            true => {
-                let url = parser_info.url.trim_end_matches(".git");
-                let repo_name = url.split('/').last().unwrap();
-                format!(
-                    "{url}/-/archive/{}/{repo_name}-{}.zip",
-                    parser_info.revision, parser_info.revision
-                )
-            }
-            false => format!("{}/archive/{}.zip", parser_info.url, parser_info.revision),
-        };
+        let download_url = download_url(parser_info);
         download_file(&download_url, &download_location).await?;
 
         let extract_dir = tmp_dir.path().join(lang);

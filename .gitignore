@@ -1,1 +1,4 @@
 /target
+/test-assets/backups
+/test-assets/parsers
+/test-assets/state.json

@@ -1,11 +1,9 @@
-use std::{thread, time::Duration};
-
 use clap::{
     builder::{styling::AnsiColor, Styles},
     Parser,
 };
 
-use crate::subcommands::{Compile, Subcommand};
+use crate::subcommands::{Compile, Install, Subcommand};
 
 const STYLES: Styles = Styles::styled()
     .header(AnsiColor::Yellow.on_default())
@@ -17,43 +15,53 @@ const STYLES: Styles = Styles::styled()
 #[derive(Debug, Parser)]
 #[clap(version, about, styles = STYLES)]
 pub enum Cli {
-    /// Compile and optionally install tree-sitter parsers with zig or clang
+    /// Compile tree-sitter parsers with zig or clang to a target directory
     #[clap(name = "compile")]
     Compile(Compile),
 
-    /// Download  and install pre-compiled tree-sitter parsers
-    #[clap(name = "download")]
-    Download,
+    /// Compile/Download tree-sitter parsers and install them
+    #[clap(name = "install")]
+    Install(Install),
+    // /// Uninstall tree-sitter parsers
+    // #[clap(name = "uninstall")]
+    // Uninstall(Uninstall),
 
-    /// List tree-sitter parsers
-    #[clap(name = "list")]
-    List,
+    // /// List tree-sitter parsers
+    // #[clap(name = "list")]
+    // List,
 
-    /// Restore to a previous release of tree-sitter parsers
-    #[clap(name = "restore")]
-    Restore,
+    // /// Restore to a previous release of tree-sitter parsers
+    // #[clap(name = "restore")]
+    // Restore,
 }
 
 impl Cli {
     pub async fn run(&self) -> anyhow::Result<()> {
         match self {
             Self::Compile(cmd) => cmd.run().await?,
-            Self::Download => {
-                println!("Download");
-            }
-            Self::List => {
-                println!("List");
-            }
-            Self::Restore => {
-                println!("Restore");
-            }
+            Self::Install(cmd) => cmd.run().await?,
+            _ => {}
         }
         Ok(())
     }
 
-    pub fn cleanup(&self) -> anyhow::Result<()> {
-        // match self {
-        // }
-        Ok(())
-    }
+    // pub fn cleanup(&self) -> anyhow::Result<()> {
+    //     match self {
+    //         Self::Compile(cmd) => cmd.cleanup()?,
+    //         Self::Install(cmd) => cmd.cleanup()?,
+    //         _ => {}
+    //     }
+    //     Ok(())
+    // }
 }
+
+// impl Drop for Cli {
+//     fn drop(&mut self) {
+//         // self.cleanup().unwrap();
+//         match self {
+//             Self::Compile(cmd) => cmd.cleanup().unwrap(),
+//             Self::Install(cmd) => cmd.cleanup().unwrap(),
+//             _ => {}
+//         }
+//     }
+// }

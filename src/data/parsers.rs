@@ -1,7 +1,7 @@
 use ahash::AHashMap;
 use serde::{Deserialize, Serialize};
 
-use crate::c_println;
+use crate::{c_println, utils::PATHS};
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct ParserInfo {
@@ -16,17 +16,31 @@ pub struct ParserInfo {
 pub struct Parsers {
     pub langs: Vec<String>,
     pub list: AHashMap<String, ParserInfo>,
+    pub wanted: Option<Vec<String>>,
 }
 
 impl Parsers {
-    pub fn new() -> Self {
-        Self {
+    pub fn new() -> anyhow::Result<Self> {
+        let wanted_file = PATHS.nvim_config.join("wanted-parsers.txt");
+
+        let wanted = match wanted_file.is_file() {
+            true => Some(
+                std::fs::read_to_string(&wanted_file)?
+                    .lines()
+                    .map(str::to_string)
+                    .collect(),
+            ),
+            false => None,
+        };
+
+        Ok(Self {
             langs: Vec::new(),
             list: AHashMap::new(),
-        }
+            wanted,
+        })
     }
 
-    pub async fn fetch_list(&mut self, tag: Option<String>) -> anyhow::Result<()> {
+    pub async fn fetch_list(&mut self, tag: &Option<String>) -> anyhow::Result<()> {
         let url = match tag {
             Some(tag) => format!(
                 // "https://raw.githubusercontent.com/KevinSilvester/nvim-treesitter-parsers/v7e9139d/parsers.json"
@@ -48,18 +62,14 @@ impl Parsers {
         self.list.get(parser)
     }
 
-    pub fn validate_parsers(&self, parsers: &[String], tag: &str) -> anyhow::Result<()> {
+    pub fn validate_parsers(&self, parsers: &[String]) -> anyhow::Result<()> {
         let invalid_parsers: Vec<_> = parsers
             .iter()
             .filter(|p| !self.list.contains_key(*p))
             .collect();
 
         if !invalid_parsers.is_empty() {
-            c_println!(
-                red,
-                "Invalid parsers for release {tag}: {:?}",
-                invalid_parsers
-            );
+            c_println!(red, "Invalid parsers: {:?}", invalid_parsers);
             anyhow::bail!("Invalid parsers: {:?}", invalid_parsers);
         }
         Ok(())
@@ -74,8 +84,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_fetch_list() {
-        let mut parsers = Parsers::new();
-        parsers.fetch_list(Some(TAG.to_string())).await.unwrap();
+        let mut parsers = Parsers::new().unwrap();
+        parsers.fetch_list(&Some(TAG.to_string())).await.unwrap();
 
         // print the cwd
         println!("{:?}", std::env::current_dir().unwrap());
@@ -108,8 +118,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_fetch_list_default() {
-        let mut parsers = Parsers::new();
-        parsers.fetch_list(None).await.unwrap();
+        let mut parsers = Parsers::new().unwrap();
+        parsers.fetch_list(&None).await.unwrap();
         assert!(!parsers.list.is_empty());
     }
 }

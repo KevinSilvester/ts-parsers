@@ -1,26 +1,27 @@
 use std::path::PathBuf;
 
-use lazy_static::lazy_static;
-
 use crate::{
     c_println,
     compiler::{Clang, Compiler, Zig, ZigTargets},
-    data::{changelog::ChangeLog, parsers::Parsers, state::State},
+    data::{changelog::ChangeLog, parsers::Parsers},
     parser::Parser,
-    utils::Paths,
+    utils::command::check_command_exists,
 };
 
 use super::Subcommand;
-
-lazy_static! {
-    static ref PATHS: Paths = Paths::new();
-}
 
 #[derive(Debug, Default, Clone, clap::ValueEnum)]
 enum Compilers {
     #[default]
     Clang,
     Zig,
+}
+
+#[derive(Debug, Default, Clone, clap::ValueEnum)]
+enum InstallMethods {
+    #[default]
+    Copmile,
+    Download,
 }
 
 #[derive(Debug, clap::Args)]
@@ -54,54 +55,69 @@ pub struct Compile {
     parsers: Vec<String>,
 }
 
+impl Compile {
+    fn select_compiler(&self) -> Box<dyn Compiler> {
+        match self.compiler {
+            Compilers::Clang => Box::new(Clang::new()),
+            Compilers::Zig => Box::new(Zig::new()),
+        }
+    }
+
+    fn select_langs(&self, parsers: &Parsers) -> anyhow::Result<Vec<String>> {
+        if self.all {
+            return Ok(parsers.langs.clone());
+        }
+
+        let langs = match self.wanted {
+            true => {
+                if parsers.wanted.is_none() {
+                    c_println!(red, "No wanted parsers found");
+                    return Err(anyhow::anyhow!("No wanted parsers found"));
+                }
+                parsers.wanted.clone().unwrap()
+            }
+            false => self.parsers.clone(),
+        };
+
+        parsers.validate_parsers(&langs)?;
+
+        if langs.is_empty() {
+            return Err(anyhow::anyhow!("No parsers found"));
+        }
+
+        Ok(langs)
+    }
+}
+
 #[async_trait::async_trait]
 impl Subcommand for Compile {
     async fn run(&self) -> anyhow::Result<()> {
-        let compiler: Box<dyn Compiler> = match self.compiler {
-            Compilers::Clang => Box::new(Clang::new()),
-            Compilers::Zig => Box::new(Zig::new()),
-        };
-        let state = State::new()?;
-        let mut parsers = Parsers::new();
+        let compiler = self.select_compiler();
+        let mut parsers = Parsers::new()?;
         let mut changelog = ChangeLog::new();
 
         changelog.fetch_changelog().await?;
-        let tag = match &self.tag {
-            Some(tag) => tag.clone(),
-            None => changelog.get_latest_tag().unwrap(),
-        };
-        changelog.check_entry(&tag)?;
-        parsers.fetch_list(Some(tag.clone())).await?;
+        changelog.check_entry(&self.tag)?;
+        parsers.fetch_list(&self.tag).await?;
 
-        if self.all {
-            for lang in &parsers.langs {
-                let parser = parsers.get_parser(lang).unwrap();
-                c_println!(blue, "\nCompiling {lang} parser");
-                Parser::compile(lang, parser, &compiler, &self.target, &self.destination).await?;
-            }
-        } else if self.wanted {
-            if state.list_wanted().is_none() {
-                c_println!(red, "No wanted parsers found");
-                return Err(anyhow::anyhow!("No wanted parsers found"));
-            }
+        let langs = &self.select_langs(&parsers)?;
+        check_command_exists("pnpm")?;
+        check_command_exists("tree-sitter")?;
 
-            parsers.validate_parsers(state.list_wanted().unwrap(), &tag)?;
-
-            for lang in state.list_wanted().unwrap() {
-                let parser = parsers.get_parser(lang).unwrap();
-                c_println!(blue, "\nCompiling {lang} parser");
-                Parser::compile(lang, parser, &compiler, &self.target, &self.destination).await?;
-            }
-        } else {
-            parsers.validate_parsers(&self.parsers, &tag)?;
-
-            for lang in &self.parsers {
-                let parser = parsers.get_parser(lang).unwrap();
-                c_println!(blue, "\nCompiling {lang} parser");
-                Parser::compile(lang, parser, &compiler, &self.target, &self.destination).await?;
-            }
+        for (idx, lang) in langs.clone().iter().enumerate() {
+            c_println!(
+                blue,
+                "\n{}/{}. Compiling parser {lang}",
+                (idx + 1),
+                langs.len()
+            );
+            let parser = parsers.get_parser(lang).unwrap();
+            Parser::compile(lang, parser, &compiler, &self.target, &self.destination).await?;
         }
+        Ok(())
+    }
 
+    fn cleanup(&self) -> anyhow::Result<()> {
         Ok(())
     }
 }

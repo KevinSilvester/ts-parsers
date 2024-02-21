@@ -1,6 +1,43 @@
 {
-   "last_updated": "2024-02-16T02:23:21.422508037Z",
-   "current_tag": "",
-   "restore_points": [],
-   "parsers": {}
+  "last_updated": "2024-02-21T12:30:54.793874701Z",
+  "restore_points": [
+    {
+      "date": "2024-02-21T12:30:54.729990088Z",
+      "location": "/home/kevin/rust/ts-parsers/test-assets/backups/backup-[2024-02-21-12:30:54]-[v6bd108a-force].zip"
+    }
+  ],
+  "parsers": {
+    "blueprint": {
+      "last_modified": "2024-02-21T12:30:53.444660173Z",
+      "revision": "863cea9f83ad5637300478e0559262f1e791684b",
+      "url": "https://gitlab.com/gabmus/tree-sitter-blueprint.git",
+      "tag": "v6bd108a",
+      "locked": false,
+      "install_method": "Compile"
+    },
+    "lua": {
+      "last_modified": "2024-02-21T12:30:53.121608503Z",
+      "revision": "9668709211b2e683f27f414454a8b51bf0a6bda1",
+      "url": "https://github.com/MunifTanjim/tree-sitter-lua",
+      "tag": "v6bd108a",
+      "locked": false,
+      "install_method": "Compile"
+    },
+    "markdown": {
+      "last_modified": "2024-02-21T12:30:54.729980270Z",
+      "revision": "2821521a4e6eab37b63dff6a8e169cd88554047d",
+      "url": "https://github.com/MDeiml/tree-sitter-markdown",
+      "tag": "v6bd108a",
+      "locked": false,
+      "install_method": "Compile"
+    },
+    "rust": {
+      "last_modified": "2024-02-21T12:30:52.572289249Z",
+      "revision": "a70daac064145c84e9d51767c2575bb68d51df58",
+      "url": "https://github.com/tree-sitter/tree-sitter-rust",
+      "tag": "v6bd108a",
+      "locked": false,
+      "install_method": "Compile"
+    }
+  }
 }

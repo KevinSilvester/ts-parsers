@@ -1,6 +1,6 @@
 [package]
 name = "ts-parsers"
-version = "0.1.0"
+version = "0.0.0"
 edition = "2021"
 authors = ["Kevin Silveter"]
 description = "A tool to manage tree-sitter parsers used by nvim-treesitter"
@@ -8,7 +8,7 @@ repository = "https://github.com/KevinSilveter/ts-parsers"
 homepage = "https://github.com/KevinSilveter/ts-parsers"
 
 [dependencies]
-ahash = { version = "0.8.8", features = ["serde"]}
+ahash = { version = "0.8.8", features = ["serde"] }
 ansi_term = "0.12.1"
 anyhow = "1.0.79"
 async-trait = "0.1.77"
@@ -44,6 +44,11 @@ tokio-process-stream = "0.4.0"
 tokio-stream = "0.1.14"
 zip = "0.6.6"
 
+[dev-dependencies]
+assert_cmd = { version = "2.0.14", features = ["color"] }
+
 [profile.release]
+strip = true
+codegen-units = 1
 opt-level = 3
 lto = "thin"

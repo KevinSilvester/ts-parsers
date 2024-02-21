@@ -32,8 +32,6 @@ async fn main() -> anyhow::Result<()> {
     let cmd = Arc::new(Mutex::new(Cli::parse()));
     let cmd_c = Arc::clone(&cmd);
 
-    let mut exit_code = 0;
-
     tokio::spawn(async move {
         match cmd_c.lock().await.run().await {
             Ok(_) => shutdown_tx.send(Shutdown::Graceful).unwrap(),
@@ -55,14 +53,16 @@ async fn main() -> anyhow::Result<()> {
         },
     };
 
-    std::mem::drop(cmd);
-
     match shutdown.load(Ordering::Relaxed) {
-        true => c_println!(green, "Gracefully shutting down... \\(￣︶￣*\\))"),
+        true => {
+            c_println!(green, "Gracefully shutting down... \\(￣︶￣*\\))");
+            std::mem::drop(cmd);
+            std::process::exit(0);
+        }
         false => {
             c_println!(red, "I borked... (┬┬﹏┬┬)");
-            exit_code = 1
+            std::mem::drop(cmd);
+            std::process::exit(1);
         }
     }
-    std::process::exit(exit_code);
 }

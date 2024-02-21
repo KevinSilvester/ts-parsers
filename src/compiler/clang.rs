@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use crate::utils::command::run_command;
+use crate::utils::command::{run_command, check_command_exists};
 
 use super::{zig::ZigTargets, Compiler};
 
@@ -52,6 +52,7 @@ impl Compiler for Clang<'_> {
         cwd: &Path,
         _: &Option<ZigTargets>,
     ) -> anyhow::Result<()> {
+        check_command_exists("clang")?;
         let args = self.build_args(files);
         match run_command(self.command, &args, Some(cwd)).await? {
             true => Ok(()),
