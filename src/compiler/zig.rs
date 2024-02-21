@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use crate::utils::command::{run_command, check_command_exists};
+use crate::utils::command::{check_command_exists, run_command};
 
 use super::Compiler;
 

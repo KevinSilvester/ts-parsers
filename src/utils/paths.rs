@@ -1,7 +1,6 @@
 use std::path::PathBuf;
 
 use lazy_static::lazy_static;
-use tempfile::{TempDir, tempdir_in};
 
 #[derive(Debug, Clone)]
 pub struct Paths {
