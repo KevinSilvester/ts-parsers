@@ -50,7 +50,7 @@ impl Backups {
         let state_bak = PATHS.ts_parsers.join("state-parsers.json");
         let archive_path = backup_dir.join(format!(
             "backup-[{}]-[{tag}].zip",
-            timestamp.format("%F-%T")
+            timestamp.format("%F_%H-%M-%S"),
         ));
 
         if !backup_dir.exists() {
