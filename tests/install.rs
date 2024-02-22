@@ -60,7 +60,7 @@ fn test_install_with_zig() {
 }
 
 #[test]
-fn test_force_install() {
+fn test_install_force() {
     let dir = OUTPUTS.join("test-install-force");
     setup(&dir);
 

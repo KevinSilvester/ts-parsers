@@ -4,11 +4,20 @@ use std::path::{Path, PathBuf};
 
 use zip::ZipArchive;
 
+#[cfg(unix)]
+const PNPM: &str = "pnpm";
+
+#[cfg(windows)]
+const PNPM: &str = "pnpm.CMD";
+
 use crate::{
     c_println,
     compiler::{Compiler, ZigTargets},
     data::parsers::ParserInfo,
-    utils::{command::run_command, http::download_file},
+    utils::{
+        command::{check_command_exists, run_command},
+        http::download_file,
+    },
 };
 
 fn download_url(parser_info: &ParserInfo) -> String {
@@ -32,6 +41,13 @@ fn download_url(parser_info: &ParserInfo) -> String {
 pub struct Parser;
 
 impl Parser {
+    pub fn check_compile_deps(compiler: &Box<dyn Compiler>) -> anyhow::Result<()> {
+        check_command_exists(compiler.get_name())?;
+        check_command_exists(PNPM)?;
+        check_command_exists("tree-sitter")?;
+        Ok(())
+    }
+
     pub async fn compile(
         lang: &str,
         parser_info: &ParserInfo,
@@ -62,7 +78,7 @@ impl Parser {
         }
 
         if parser_info.generate_from_grammar {
-            run_command("pnpm", &["install"], Some(&cwd)).await?;
+            run_command(PNPM, &["install"], Some(&cwd)).await?;
             if !run_command("tree-sitter", &["generate"], Some(&cwd)).await? {
                 c_println!(amber, "=> WARNGING: tree-sitter generate failed");
             }

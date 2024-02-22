@@ -129,8 +129,7 @@ impl Subcommand for Install {
 
         match self.method {
             ParserInstallMethod::Compile => {
-                check_command_exists("pnpm")?;
-                check_command_exists("tree-sitter")?;
+                Parser::check_compile_deps(&compiler)?;
 
                 for (idx, lang) in langs.clone().iter().enumerate() {
                     c_println!(blue, "\n{}/{}. {msg} {lang}", (idx + 1), langs.len());

@@ -71,6 +71,10 @@ impl<'a> Zig<'a> {
 
 #[async_trait::async_trait]
 impl Compiler for Zig<'_> {
+    fn get_name(&self) -> &str {
+        "zig"
+    }
+
     async fn compile(
         &self,
         files: &[&str],

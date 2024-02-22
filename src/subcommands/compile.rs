@@ -101,8 +101,7 @@ impl Subcommand for Compile {
         parsers.fetch_list(&self.tag).await?;
 
         let langs = &self.select_langs(&parsers)?;
-        check_command_exists("pnpm")?;
-        check_command_exists("tree-sitter")?;
+        Parser::check_compile_deps(&compiler)?;
 
         for (idx, lang) in langs.clone().iter().enumerate() {
             c_println!(

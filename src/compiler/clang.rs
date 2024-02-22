@@ -46,6 +46,10 @@ impl<'a> Clang<'a> {
 
 #[async_trait::async_trait]
 impl Compiler for Clang<'_> {
+    fn get_name(&self) -> &str {
+        "clang"
+    }
+
     async fn compile(
         &self,
         files: &[&str],

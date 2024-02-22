@@ -11,6 +11,8 @@ pub trait Compiler: Send + Sync {
         cwd: &Path,
         target: &Option<ZigTargets>,
     ) -> anyhow::Result<()>;
+
+    fn get_name(&self) -> &str;
 }
 
 pub use self::clang::Clang;
