@@ -64,9 +64,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
-      - name: Install script deps
+      - name: Install tree-sitter-cli
         shell: bash
-        run: pnpm add -g tree-sitter-cli
+        run: cargo install tree-sitter-cli
 
       - name: Run Tests
         run: cargo test
