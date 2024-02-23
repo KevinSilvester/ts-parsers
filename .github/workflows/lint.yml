@@ -46,7 +46,7 @@ jobs:
           cp zig-macos-x86_64-0.11.0/* $HOME/zig
 
       - name: Setup Zig (linux)
-        if: matrix.os == 'linux-latest'
+        if: matrix.os == 'ubuntu-latest'
         shell: bash
         run: |
           wget 'https://ziglang.org/download/0.11.0/zig-linux-x86_64-0.11.0.tar.xz' -O /tmp/zig.tar.xz
