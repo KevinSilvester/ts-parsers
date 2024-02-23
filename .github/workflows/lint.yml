@@ -41,18 +41,20 @@ jobs:
         shell: bash
         run: |
           wget 'https://ziglang.org/download/0.11.0/zig-macos-x86_64-0.11.0.tar.xz' -O /tmp/zig.tar.xz
-          tar -xvf /tmp/zig.tar.xz -C /tmp
+          tar -xf /tmp/zig.tar.xz -C /tmp
           mkdir -p $HOME/zig
           cp -r /tmp/zig-macos-x86_64-0.11.0/* $HOME/zig
+          echo "$HOME/zig" >> $GITHUB_PATH
 
       - name: Setup Zig (linux)
         if: matrix.os == 'ubuntu-latest'
         shell: bash
         run: |
           wget 'https://ziglang.org/download/0.11.0/zig-linux-x86_64-0.11.0.tar.xz' -O /tmp/zig.tar.xz
-          tar -xvf /tmp/zig.tar.xz -C /tmp
+          tar -xf /tmp/zig.tar.xz -C /tmp
           mkdir -p $HOME/zig
           cp -r /tmp/zig-linux-x86_64-0.11.0/* $HOME/zig
+          echo "$HOME/zig" >> $GITHUB_PATH
 
       - name: Setup Zig (windows)
         if: matrix.os == 'windows-latest'
@@ -62,13 +64,11 @@ jobs:
           7z x "$env:TEMP\zig.zip" -o"$env:TEMP"
           New-Item -Type Directory -Path $env:USERPROFILE\zig
           Move-Item -Path "$env:TEMP\zig-windows-x86_64-0.11.0\*" -Destination "$env:USERPROFILE\zig"
+          "$env:USERPROFILE\zig" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          "$env:USERPROFILE\zig"
+          "$env:Path"
+          "$evn:GITHUB_PATH"
 
-      - name: Add Zig to PATH
-        shell: bash
-        run: |
-          ls -la $HOME/zig
-          echo "$HOME/zig" >> $GITHUB_PATH
-          
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
