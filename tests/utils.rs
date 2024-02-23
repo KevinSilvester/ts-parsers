@@ -1,5 +1,7 @@
 use std::path::Path;
 
+pub const WANT_PARSERS: &[&str] = &[ "lua", "blueprint", "markdown" ];
+
 pub fn remove_all(path: &Path) {
     if path.is_file() {
         std::fs::remove_file(path).unwrap();
@@ -27,7 +29,7 @@ pub fn setup(test_dir: &Path) {
     std::fs::create_dir_all(test_dir).unwrap();
     std::fs::write(
         test_dir.join("wanted-parsers.txt"),
-        "lua\nblueprint\nmarkdown",
+        WANT_PARSERS.join("\n"),
     )
     .unwrap();
 }

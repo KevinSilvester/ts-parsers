@@ -46,14 +46,7 @@ fn test_install_with_zig() {
 
     let mut cmd = Command::cargo_bin("ts-parsers").unwrap();
     cmd.env("TS_PARSERS_TEST_DIR", &dir);
-    cmd.args([
-        "install",
-        "--compiler",
-        "zig",
-        "--target",
-        "x86_64-windows",
-        "rust",
-    ]);
+    cmd.args(["install", "--compiler", "zig", "rust"]);
     cmd.assert().success();
 
     validate_state(&dir);
