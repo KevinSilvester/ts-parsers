@@ -42,7 +42,8 @@ jobs:
         run: |
           wget 'https://ziglang.org/download/0.11.0/zig-macos-x86_64-0.11.0.tar.xz' -O /tmp/zig.tar.xz
           tar -xf /tmp/zig.tar.xz -C /tmp
-          mkdir -p $HOME/zig && mv zig-macos-x86_64-0.11.0/* $HOME/zig
+          mkdir -p $HOME/zig
+          cp zig-macos-x86_64-0.11.0/* $HOME/zig
 
       - name: Setup Zig (linux)
         if: matrix.os == 'linux-latest'
@@ -50,7 +51,8 @@ jobs:
         run: |
           wget 'https://ziglang.org/download/0.11.0/zig-linux-x86_64-0.11.0.tar.xz' -O /tmp/zig.tar.xz
           tar -xf /tmp/zig.tar.xz -C /tmp
-          mkdir -p $HOME/zig && mv zig-linux-x86_64-0.11.0/* $HOME/zig
+          mkdir -p $HOME/zig
+          cp zig-linux-x86_64-0.11.0/* $HOME/zig
 
       - name: Setup Zig (windows)
         if: matrix.os == 'windows-latest'
@@ -61,6 +63,11 @@ jobs:
           New-Item -Type Directory -Path $env:USERPROFILE\zig
           Move-Item -Path "$env:TEMP\zig-windows-x86_64-0.11.0" -Destination "$env:USERPROFILE\zig"
 
+      - name: Add Zig to PATH
+        shell: bash
+        run: |
+          echo "$HOME/zig" >> $GITHUB_PATH
+          
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
@@ -79,6 +86,4 @@ jobs:
 
       - name: Run Tests
         shell: bash
-        run: |
-          PATH=$HOME/zig:$PATH
-          cargo test
+        run: cargo test
