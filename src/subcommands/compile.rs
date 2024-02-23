@@ -2,27 +2,12 @@ use std::path::PathBuf;
 
 use crate::{
     c_println,
-    compiler::{Clang, Compiler, Zig, ZigTargets},
+    compiler::{Clang, Compiler, Compilers, Zig, ZigTargets},
     data::{changelog::ChangeLog, parsers::Parsers},
     parser::Parser,
-    utils::command::check_command_exists,
 };
 
 use super::Subcommand;
-
-#[derive(Debug, Default, Clone, clap::ValueEnum)]
-enum Compilers {
-    #[default]
-    Clang,
-    Zig,
-}
-
-#[derive(Debug, Default, Clone, clap::ValueEnum)]
-enum InstallMethods {
-    #[default]
-    Copmile,
-    Download,
-}
 
 #[derive(Debug, clap::Args)]
 pub struct Compile {
@@ -30,7 +15,10 @@ pub struct Compile {
     #[clap(short, long, default_value_t, value_enum)]
     compiler: Compilers,
 
-    /// Zig target, only used when compiler is zig
+    /// Zig compile target
+    ///
+    /// Only used when compiler is zig.
+    /// (defaults to host architecture)
     #[clap(short, long, value_enum)]
     target: Option<ZigTargets>,
 
@@ -38,15 +26,20 @@ pub struct Compile {
     #[clap(short, long, default_value = "false")]
     all: bool,
 
-    /// Destination to install the compiled parsers
+    /// Output directory to compile parsers to
     #[clap(short, long)]
     destination: PathBuf,
 
-    /// `nvim-treesitter-parsers` release to use
+    /// `nvim-treesitter-parsers` tags to use
+    ///
+    /// Will only use tags present in the changelog
+    /// (defaults to latest tag)
+    ///
+    /// See https://github.com/KevinSilvester/nvim-treesitter-parerers
     #[clap(long)]
     tag: Option<String>,
 
-    /// Compile parsers in `wanted` list
+    /// Compile parsers in `wanted-parsers.txt`
     #[clap(short, long, default_value = "false", conflicts_with_all = ["all", "parsers"] )]
     wanted: bool,
 

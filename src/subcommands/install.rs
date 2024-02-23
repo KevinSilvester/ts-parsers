@@ -1,6 +1,6 @@
 use crate::{
     c_println,
-    compiler::{Clang, Compiler, Zig, ZigTargets},
+    compiler::{Clang, Compiler, Compilers, Zig},
     data::{
         changelog::ChangeLog,
         parsers::Parsers,
@@ -8,20 +8,12 @@ use crate::{
     },
     parser::Parser,
     utils::{
-        command::check_command_exists,
         fs::{copy_all, remove_all},
         Backups, PATHS,
     },
 };
 
 use super::Subcommand;
-
-#[derive(Debug, Default, Clone, clap::ValueEnum)]
-enum Compilers {
-    #[default]
-    Clang,
-    Zig,
-}
 
 #[derive(Debug, clap::Args)]
 pub struct Install {
@@ -33,19 +25,20 @@ pub struct Install {
     #[clap(short, long, default_value_t, value_enum)]
     compiler: Compilers,
 
-    /// Zig target, only used when compiler is zig
-    #[clap(short, long, value_enum)]
-    target: Option<ZigTargets>,
-
     /// Compile all parsers
     #[clap(short, long, default_value = "false")]
     all: bool,
 
-    /// `nvim-treesitter-parsers` release to use
+    /// `nvim-treesitter-parsers` tags to use
+    ///
+    /// Will only use tags present in the changelog
+    /// (defaults to latest tag)
+    ///
+    /// See https://github.com/KevinSilvester/nvim-treesitter-parerers
     #[clap(long)]
     tag: Option<String>,
 
-    /// Compile parsers in `wanted` list
+    /// Compile parsers in `wanted-parsers.txt`
     #[clap(short, long, default_value = "false", conflicts_with_all = ["all", "parsers"] )]
     wanted: bool,
 
@@ -134,7 +127,7 @@ impl Subcommand for Install {
                 for (idx, lang) in langs.clone().iter().enumerate() {
                     c_println!(blue, "\n{}/{}. {msg} {lang}", (idx + 1), langs.len());
                     let parser = parsers.get_parser(lang).unwrap();
-                    Parser::compile(lang, parser, &compiler, &self.target, &destination).await?;
+                    Parser::compile(lang, parser, &compiler, &None, &destination).await?;
                     state.add_parser(lang, &tag, ParserInstallMethod::Compile, parser);
                 }
             }
