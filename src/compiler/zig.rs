@@ -45,23 +45,23 @@ impl<'a> Zig<'a> {
         match target {
             Some(ZigTargets::X86_64Linux) => {
                 args.push("-target");
-                args.push("x86_64-linux-gnu");
+                args.push("x86_64-linux");
             }
             Some(ZigTargets::Aarch64Linux) => {
                 args.push("-target");
-                args.push("aarch64-linux-gnu");
+                args.push("aarch64-linux");
             }
             Some(ZigTargets::X86_64MacOS) => {
                 args.push("-target");
-                args.push("x86_64-darwin");
+                args.push("x86_64-macos");
             }
             Some(ZigTargets::Aarch64MacOS) => {
                 args.push("-target");
-                args.push("aarch64-darwin");
+                args.push("aarch64-macos");
             }
             Some(ZigTargets::X86_64Windows) => {
                 args.push("-target");
-                args.push("x86_64-windows-gnu");
+                args.push("x86_64-windows");
             }
             None => {}
         }
@@ -113,7 +113,7 @@ mod tests {
                 "src/scanner.c",
                 "src/parser.c",
                 "-target",
-                "x86_64-linux-gnu"
+                "x86_64-linux"
             ]
         );
     }

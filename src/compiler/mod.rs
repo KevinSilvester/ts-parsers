@@ -15,5 +15,12 @@ pub trait Compiler: Send + Sync {
     fn get_name(&self) -> &str;
 }
 
+#[derive(Debug, Default, Clone, clap::ValueEnum)]
+pub enum Compilers {
+    #[default]
+    Clang,
+    Zig,
+}
+
 pub use self::clang::Clang;
 pub use self::zig::{Zig, ZigTargets};
