@@ -1,4 +1,3 @@
-mod common;
 mod utils;
 
 use std::path::PathBuf;

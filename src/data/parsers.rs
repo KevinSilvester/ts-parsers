@@ -1,7 +1,7 @@
 use ahash::AHashMap;
 use serde::{Deserialize, Serialize};
 
-use crate::{c_println, utils::PATHS};
+use crate::utils::PATHS;
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct ParserInfo {
@@ -42,12 +42,7 @@ impl Parsers {
 
     pub async fn fetch_list(&mut self, tag: &Option<String>) -> anyhow::Result<()> {
         let url = match tag {
-            Some(tag) => format!(
-                // "https://raw.githubusercontent.com/KevinSilvester/nvim-treesitter-parsers/v7e9139d/parsers.json"
-                "https://raw.githubusercontent.com/KevinSilvester/nvim-treesitter-parsers/{}/parsers.min.json",
-                tag
-            ),
-                     // https://raw.githubusercontent.com/KevinSilvester/nvim-treesitter-parsers/master/parsers.min.json
+            Some(tag) => format!( "https://raw.githubusercontent.com/KevinSilvester/nvim-treesitter-parsers/{tag}/parsers.min.json"),
             None => "https://raw.githubusercontent.com/KevinSilvester/nvim-treesitter-parsers/master/parsers.min.json".to_string(),
         };
 
@@ -69,7 +64,6 @@ impl Parsers {
             .collect();
 
         if !invalid_parsers.is_empty() {
-            c_println!(red, "Invalid parsers: {:?}", invalid_parsers);
             anyhow::bail!("Invalid parsers: {:?}", invalid_parsers);
         }
         Ok(())

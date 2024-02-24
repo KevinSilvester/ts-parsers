@@ -100,18 +100,40 @@ impl State {
         self.parsers.insert(name.to_owned(), parser_state);
     }
 
-    pub fn check_parser(&self, name: &str) -> bool {
-        self.parsers.contains_key(name)
+    pub fn is_up_to_date(&self, name: &str, tag: &str) -> bool {
+        let parser = self.parsers.get(name).unwrap();
+        parser.tag == tag
     }
 
     // pub fn get_parser(&self, name: &str) -> Option<&ParserState> {
     //     self.parsers.get(name)
     // }
 
-    // pub fn remove_parser(&mut self, name: &str) -> anyhow::Result<()> {
-    //     self.parsers.remove(name);
-    //     Ok(())
-    // }
+    pub fn update_parser(
+        &mut self,
+        name: &str,
+        tag: &str,
+        install_method: ParserInstallMethod,
+        parser_info: &ParserInfo,
+    ) {
+        let parser = self.parsers.get_mut(name).unwrap();
+
+        parser.last_modified = Utc::now();
+        parser.revision = parser_info.revision.clone();
+        parser.tag = tag.to_owned();
+        parser.url = parser_info.url.clone();
+        parser.install_method = install_method;
+
+        // let parser_state = ParserState {
+        //     last_modified: Utc::now(),
+        //     revision: parser_info.revision.clone(),
+        //     tag: tag.to_owned(),
+        //     url: parser_info.url.clone(),
+        //     install_method,
+        //     ..ParserState::default()
+        // };
+        // self.parsers.insert(name.to_owned(), parser_state);
+    }
 
     // pub fn update_parser(&mut self, name: &str, mut parser: ParserState) -> anyhow::Result<()> {
     //     parser.last_modified = Utc::now();
@@ -163,7 +185,7 @@ mod tests {
         let parser_info = dummy_parser_info();
         state.add_parser("Test", "test", ParserInstallMethod::Compile, &parser_info);
 
-        assert!(state.check_parser("Test"));
+        assert!(state.parsers.get("Test").is_some());
     }
 
     // #[test]
@@ -183,43 +205,32 @@ mod tests {
     //     assert!(!state.check_parser(&new_lang));
     // }
 
-    // #[test]
-    // fn test_parser_update() {
-    //     let new_lang = "new_lang".to_string();
-    //     let new_lang_state = ParserState {
-    //         revision: "revision".to_string(),
-    //         tag: "tag".to_string(),
-    //         url: "https://url.com".to_string(),
-    //         ..ParserState::default()
-    //     };
+    #[test]
+    fn test_parser_update() {
+        let mut state = State::new().unwrap();
+        let parser_info = dummy_parser_info();
+        state.add_parser("Test", "test", ParserInstallMethod::Compile, &parser_info);
 
-    //     let mut state = State::new().unwrap();
-    //     state.add_parser(new_lang.clone(), new_lang_state).unwrap();
+        let new_parser_info = ParserInfo {
+            url: "https://new.com".to_owned(),
+            files: vec!["src/new.c".to_owned()],
+            location: None,
+            revision: "new".to_owned(),
+            generate_from_grammar: false,
+        };
 
-    //     let current_lang_state = state.get_parser(&new_lang).unwrap().clone();
-    //     let new_lang_state = ParserState {
-    //         revision: "new_revision".to_string(),
-    //         tag: "new_tag".to_string(),
-    //         url: "https://new_url.com".to_string(),
-    //         install_method: ParserInstallMethod::Copmiled,
-    //         ..current_lang_state
-    //     };
-    //     state.update_parser(&new_lang, new_lang_state).unwrap();
-    //     state.toggle_lock(&new_lang).unwrap();
+        state.update_parser(
+            "Test",
+            "new",
+            ParserInstallMethod::Download,
+            &new_parser_info,
+        );
 
-    //     let current_lang_state = state.get_parser(&new_lang).unwrap().clone();
-
-    //     assert_eq!(
-    //         state.get_parser(&new_lang).unwrap().clone(),
-    //         ParserState {
-    //             revision: "new_revision".to_string(),
-    //             tag: "new_tag".to_string(),
-    //             url: "https://new_url.com".to_string(),
-    //             install_method: ParserInstallMethod::Copmiled,
-    //             locked: true,
-    //             still_supported: true,
-    //             last_modified: current_lang_state.last_modified,
-    //         }
-    //     );
-    // }
+        let  current_lang_state = state.parsers.get("Test").unwrap().clone();
+        
+        assert_eq!(current_lang_state.revision, "new");
+        assert_eq!(current_lang_state.tag, "new");
+        assert_eq!(current_lang_state.url, "https://new.com");
+        assert_eq!(current_lang_state.install_method, ParserInstallMethod::Download);
+    }
 }

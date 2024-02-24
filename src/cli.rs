@@ -3,7 +3,7 @@ use clap::{
     Parser,
 };
 
-use crate::subcommands::{Compile, Install, Subcommand};
+use crate::subcommands::{Compile, Install, Subcommand, Update};
 
 const STYLES: Styles = Styles::styled()
     .header(AnsiColor::Yellow.on_default())
@@ -15,6 +15,18 @@ const STYLES: Styles = Styles::styled()
 #[derive(Debug, Parser)]
 #[clap(version, about, styles = STYLES)]
 pub enum Cli {
+    // /// Create/restore backups of installed tree-sitter parsers
+    // #[clap(name = "backups")]
+    // Backups,
+
+    // /// Display changelog for nvim-treesitter-parsers
+    // #[clap(name = "changelog")]
+    // Changelog,
+
+    // /// Clear the download cache/backups
+    // #[clap(name = "clear")]
+    // Clear,
+
     /// Compile tree-sitter parsers with zig or clang to a target directory
     #[clap(name = "compile")]
     Compile(Compile),
@@ -22,17 +34,30 @@ pub enum Cli {
     /// Compile/Download tree-sitter parsers and install them
     #[clap(name = "install")]
     Install(Install),
-    // /// Uninstall tree-sitter parsers
-    // #[clap(name = "uninstall")]
-    // Uninstall(Uninstall),
 
-    // /// List tree-sitter parsers
-    // #[clap(name = "list")]
-    // List,
+    // /// Lock the current state of installed tree-sitter parsers
+    // #[clap(name = "lock")]
+    // Lock,
 
-    // /// Restore to a previous release of tree-sitter parsers
-    // #[clap(name = "restore")]
-    // Restore,
+    // /// Self update
+    // #[clap(name = "self-update")]
+    // SelfUpdate,
+
+    // /// List all tree-sitter parsers (installed and available)
+    // #[clap(name = "parsers")]
+    // Parsers,
+
+    /// Uninstall tree-sitter parsers
+    #[clap(name = "uninstall")]
+    Uninstall,
+
+    /// Update installed tree-sitter parsers
+    #[clap(name = "update")]
+    Update(Update),
+
+    // /// Unlock the current state of installed tree-sitter parsers
+    // #[clap(name = "unlock")]
+    // Unlock,
 }
 
 impl Cli {
@@ -40,7 +65,10 @@ impl Cli {
         match self {
             Self::Compile(cmd) => cmd.run().await?,
             Self::Install(cmd) => cmd.run().await?,
-            _ => {}
+            Self::Update(cmd) => cmd.run().await?,
+            _ => {
+                todo!("run other commands")
+            }
         }
         Ok(())
     }

@@ -1,13 +1,11 @@
-mod common;
 mod utils;
 
 use std::path::PathBuf;
 
 use assert_cmd::Command;
-use common::validate_state;
 use lazy_static::lazy_static;
 
-use crate::utils::setup;
+use crate::utils::{setup, validate_state};
 
 lazy_static! {
     static ref OUTPUTS: PathBuf = PathBuf::from("tests").join("outputs");

@@ -8,7 +8,7 @@ repository = "https://github.com/KevinSilveter/ts-parsers"
 homepage = "https://github.com/KevinSilveter/ts-parsers"
 
 [dependencies]
-ahash = { version = "0.8.8", features = ["serde"] }
+ahash = { version = "0.8.9", features = ["serde"] }
 ansi_term = "0.12.1"
 anyhow = "1.0.79"
 async-trait = "0.1.77"
@@ -40,6 +40,7 @@ zip = "0.6.6"
 [dev-dependencies]
 assert_cmd = { version = "2.0.14", features = ["color"] }
 jsonschema = "0.17.1"
+predicates = "3.1.0"
 
 [profile.release]
 strip = true

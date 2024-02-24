@@ -8,7 +8,7 @@ use zip::ZipArchive;
 const PNPM: &str = "pnpm";
 
 #[cfg(windows)]
-const PNPM: &str = "pnpm.CMD";
+const PNPM: &str = "pnpm.cmd";
 
 use crate::{
     c_println,
@@ -21,19 +21,15 @@ use crate::{
 };
 
 fn download_url(parser_info: &ParserInfo) -> String {
+    let url = parser_info.url.trim_end_matches(".git");
+    let repo_name = url.split('/').last().unwrap();
+
     match parser_info.url.contains("gitlab") {
-        true => {
-            let url = parser_info.url.trim_end_matches(".git");
-            let repo_name = url.split('/').last().unwrap();
-            format!(
-                "{url}/-/archive/{}/{repo_name}-{}.zip",
-                parser_info.revision, parser_info.revision
-            )
-        }
-        false => {
-            let url = parser_info.url.trim_end_matches(".git");
-            format!("{url}/archive/{}.zip", parser_info.revision)
-        }
+        true => format!(
+            "{url}/-/archive/{}/{repo_name}-{}.zip",
+            parser_info.revision, parser_info.revision
+        ),
+        false => format!("{url}/archive/{}.zip", parser_info.revision),
     }
 }
 

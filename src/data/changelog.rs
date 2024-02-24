@@ -30,7 +30,7 @@ impl ChangeLog {
 
     pub async fn fetch_changelog(&mut self) -> anyhow::Result<()> {
         let url =
-            "https://raw.githubusercontent.com/KevinSilvester/nvim-treesitter-parsers/master/CHANGELOG.json";
+            "https://raw.githubusercontent.com/KevinSilvester/nvim-treesitter-parsers/master/CHANGELOG.min.json";
         let res = reqwest::get(url).await?;
         self.entries = res.json().await?;
         Ok(())
@@ -54,10 +54,6 @@ impl ChangeLog {
             true => Ok(()),
             false => Err(anyhow::anyhow!("Tag {} not found in changelog", tag)),
         }
-    }
-
-    pub fn get_entry(&self, tag: &str) -> Option<&ChangeLogEntry> {
-        self.entries.iter().find(|entry| entry.tag == tag)
     }
 }
 

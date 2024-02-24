@@ -1,4 +1,9 @@
+#![allow(dead_code)]
+
 use std::path::Path;
+
+use jsonschema::is_valid;
+use serde_json::Value;
 
 pub const WANT_PARSERS: &[&str] = &["lua", "blueprint", "markdown"];
 
@@ -28,4 +33,16 @@ pub fn setup(test_dir: &Path) {
 
     std::fs::create_dir_all(test_dir).unwrap();
     std::fs::write(test_dir.join("wanted-parsers.txt"), WANT_PARSERS.join("\n")).unwrap();
+}
+
+pub fn validate_state(dir: &Path) {
+    let state_path = dir.join("state.json");
+    let schema_path = Path::new("tests")
+        .join("fixtures")
+        .join("state-schema.json");
+    let state: Value = serde_json::from_str(&std::fs::read_to_string(state_path).unwrap()).unwrap();
+    let schema: Value =
+        serde_json::from_str(&std::fs::read_to_string(schema_path).unwrap()).unwrap();
+
+    assert!(is_valid(&schema, &state));
 }
