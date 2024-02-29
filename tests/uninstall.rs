@@ -3,7 +3,7 @@ mod utils;
 use assert_cmd::Command;
 use utils::OUTPUTS;
 
-use crate::utils::{setup, validate_state};
+use crate::utils::{check_backups, setup, validate_state};
 
 #[test]
 fn test_uninstall_specific() {
@@ -25,8 +25,7 @@ fn test_uninstall_specific() {
     let parser_dir = dir.join("parsers");
     assert!(parser_dir.is_dir());
 
-    let backup_dir = dir.join("backups");
-    assert!(backup_dir.is_dir());
+    check_backups(&dir, 1, "uninstall");
 
     let files = parser_dir.read_dir().unwrap().collect::<Vec<_>>();
     assert_eq!(files.len(), 1);
@@ -63,8 +62,7 @@ fn test_uninstall_wanted() {
     let parser_dir = dir.join("parsers");
     assert!(parser_dir.is_dir());
 
-    let backup_dir = dir.join("backups");
-    assert!(backup_dir.is_dir());
+    check_backups(&dir, 1, "uninstall");
 
     let files = parser_dir.read_dir().unwrap().collect::<Vec<_>>();
     assert_eq!(files.len(), 0);
@@ -92,4 +90,86 @@ fn test_uninstall_not_installed() {
     assert!(!status.success());
     assert_eq!(stdout, "");
     assert_eq!(stderr, expected.join("\n"));
+    check_backups(&dir, 1, "uninstall");
+}
+
+#[test]
+fn test_uninstall_locked_parser() {
+    let dir = OUTPUTS.join("test-uninstall-locked-parser");
+    setup(&dir);
+
+    let expected = [
+        r#"Parsers are locked: ["lua", "blueprint", "markdown"]"#,
+        r#"No parsers to uninstall!"#,
+        r#"Gracefully shutting down... \(￣︶￣*\))"#,
+        "",
+    ];
+
+    // install parsers
+    let mut cmd = Command::cargo_bin("ts-parsers").unwrap();
+    cmd.env("TS_PARSERS_DATA", &dir);
+    cmd.env(
+        "TS_PARSERS_WANTED_PARSERS",
+        "tests/fixtures/wanted-parsers.txt",
+    );
+    cmd.args(["install", "--wanted"]);
+    cmd.assert().success();
+    validate_state(&dir);
+
+    // lock parsers
+    let mut cmd = Command::cargo_bin("ts-parsers").unwrap();
+    cmd.env("TS_PARSERS_DATA", &dir);
+    cmd.env(
+        "TS_PARSERS_WANTED_PARSERS",
+        "tests/fixtures/wanted-parsers.txt",
+    );
+    cmd.args(["lock", "--wanted"]);
+    cmd.assert().success();
+    validate_state(&dir);
+
+    // uninstall parsers
+    let mut cmd = Command::cargo_bin("ts-parsers").unwrap();
+    cmd.env("TS_PARSERS_DATA", &dir);
+    cmd.env(
+        "TS_PARSERS_WANTED_PARSERS",
+        "tests/fixtures/wanted-parsers.txt",
+    );
+    cmd.args(["uninstall", "--wanted"]);
+
+    let output = cmd.output().unwrap();
+    let stdout = String::from_utf8(strip_ansi_escapes::strip(output.stdout)).unwrap();
+    let stderr = String::from_utf8(strip_ansi_escapes::strip(output.stderr)).unwrap();
+    let status = output.status;
+
+    assert!(status.success());
+    assert_eq!(stdout, expected.join("\n"));
+    assert_eq!(stderr, "");
+    validate_state(&dir);
+
+    // unlock parsers
+    let mut cmd = Command::cargo_bin("ts-parsers").unwrap();
+    cmd.env("TS_PARSERS_DATA", &dir);
+    cmd.env(
+        "TS_PARSERS_WANTED_PARSERS",
+        "tests/fixtures/wanted-parsers.txt",
+    );
+    cmd.args(["unlock", "--wanted"]);
+    cmd.assert().success();
+    validate_state(&dir);
+
+    // uninstall parsers
+    let mut cmd = Command::cargo_bin("ts-parsers").unwrap();
+    cmd.env("TS_PARSERS_DATA", &dir);
+    cmd.env(
+        "TS_PARSERS_WANTED_PARSERS",
+        "tests/fixtures/wanted-parsers.txt",
+    );
+    cmd.args(["uninstall", "--wanted"]);
+    cmd.assert().success();
+    validate_state(&dir);
+    check_backups(&dir, 1, "uninstall");
+
+    let parser_dir = dir.join("parsers");
+    let files = parser_dir.read_dir().unwrap().collect::<Vec<_>>();
+    assert_eq!(files.len(), 0);
 }

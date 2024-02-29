@@ -83,6 +83,15 @@ pub fn check_backups(dir: &Path, num: i32, tag: &str) {
     let backups = dir.join("backups");
     let mut count = 0;
 
+    if !backups.exists() {
+        return;
+    }
+
+    if num == 0 {
+        assert!(backups.read_dir().unwrap().next().is_none());
+        return;
+    }
+
     for entry in backups.read_dir().unwrap() {
         let entry = entry.unwrap();
         let path = entry.path();
