@@ -32,7 +32,10 @@ fn test_compile_wanted() {
     setup(&dir);
 
     let mut cmd = Command::cargo_bin("ts-parsers").unwrap();
-    cmd.env("TS_PARSERS_WANTED_PARSERS", "tests/fixtures/wanted-parsers.txt");
+    cmd.env(
+        "TS_PARSERS_WANTED_PARSERS",
+        "tests/fixtures/wanted-parsers.txt",
+    );
     cmd.args([
         "compile",
         "--destination",

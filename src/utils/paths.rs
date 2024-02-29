@@ -50,7 +50,9 @@ impl Paths {
     #[cfg(test)]
     pub fn new() -> Self {
         Self {
-            wanted_parsers: PathBuf::from("tests").join("fixtures").join("wanted-parsers.txt"),
+            wanted_parsers: PathBuf::from("tests")
+                .join("fixtures")
+                .join("wanted-parsers.txt"),
             ts_parsers: PathBuf::from("tests").join("outputs").join("unit-tests"),
         }
     }

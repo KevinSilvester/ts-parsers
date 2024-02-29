@@ -33,11 +33,7 @@ pub fn check_exists(command: &str) -> anyhow::Result<()> {
     }
 }
 
-pub async fn run(
-    name: &str,
-    args: &[&str],
-    cwd: Option<impl AsRef<Path>>,
-) -> anyhow::Result<bool> {
+pub async fn run(name: &str, args: &[&str], cwd: Option<impl AsRef<Path>>) -> anyhow::Result<bool> {
     let mut command = Command::new(name);
     command.args(args);
     if let Some(cwd) = cwd {

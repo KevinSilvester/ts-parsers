@@ -1,6 +1,10 @@
 use chrono::Utc;
 
-use crate::{utils::{PATHS, archives}, c_println, data::state::{State, RestorePoint}};
+use crate::{
+    c_println,
+    data::state::{RestorePoint, State},
+    utils::{archives, PATHS},
+};
 
 pub fn create_backup(state: &mut State, tag: &str) -> anyhow::Result<()> {
     let timestamp = Utc::now();
@@ -21,7 +25,6 @@ pub fn create_backup(state: &mut State, tag: &str) -> anyhow::Result<()> {
         return Ok(());
     }
 
-
     state.create_backup(&state_bak)?;
     archives::create_tar_bz2(&archive_path, &[&parsers_dir, &state_bak])?;
 
@@ -34,7 +37,6 @@ pub fn create_backup(state: &mut State, tag: &str) -> anyhow::Result<()> {
 
     Ok(())
 }
-
 
 #[cfg(test)]
 mod tests {

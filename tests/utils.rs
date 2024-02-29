@@ -6,12 +6,11 @@ use jsonschema::is_valid;
 use lazy_static::lazy_static;
 use serde_json::Value;
 
-
 lazy_static! {
     pub static ref OUTPUTS: PathBuf = PathBuf::from("tests").join("outputs");
     pub static ref WANTED_PARSERS: Vec<String> = {
         let wanted_parsers = std::fs::read_to_string("tests/fixtures/wanted-parsers.txt").unwrap();
-        let res =  wanted_parsers
+        let res = wanted_parsers
             .lines()
             .map(str::trim)
             .filter(|line| !line.is_empty())
