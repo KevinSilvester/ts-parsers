@@ -50,6 +50,29 @@ fn test_compile_wanted() {
 }
 
 #[test]
+fn test_compile_with_gcc() {
+    let dir = OUTPUTS.join("test-compile-with-gcc");
+    setup(&dir);
+
+    let mut cmd = Command::cargo_bin("ts-parsers").unwrap();
+    cmd.args([
+        "compile",
+        "--compiler",
+        "gcc",
+        "--destination",
+        &dir.to_str().unwrap(),
+        "rust",
+        "blueprint",
+        "markdown",
+    ]);
+    cmd.assert().success();
+
+    for lang in ["rust", "blueprint", "markdown"] {
+        assert!(dir.join(format!("{lang}.so")).exists());
+    }
+}
+
+#[test]
 fn test_compile_with_zig() {
     let dir = OUTPUTS.join("test-compile-with-zig");
     let zig_targets = [
