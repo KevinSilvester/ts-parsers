@@ -133,10 +133,12 @@ impl State {
         self.parsers.get(name).unwrap().locked
     }
 
-    pub fn toggle_lock(&mut self, name: &str) -> anyhow::Result<()> {
-        let parser = self.parsers.get(name).unwrap();
-        self.parsers.get_mut(name).unwrap().locked = !parser.locked;
-        Ok(())
+    pub fn lock_parser(&mut self, name: &str) {
+        self.parsers.get_mut(name).unwrap().locked = true;
+    }
+
+    pub fn unlock_parser(&mut self, name: &str) {
+        self.parsers.get_mut(name).unwrap().locked = false;
     }
 
     pub fn append_restore_point(&mut self, restore_point: RestorePoint) {
