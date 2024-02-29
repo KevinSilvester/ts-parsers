@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use crate::utils::command::{check_command_exists, run_command};
+use crate::utils::command;
 
 use super::Compiler;
 
@@ -81,9 +81,9 @@ impl Compiler for Zig<'_> {
         cwd: &Path,
         target: &Option<ZigTargets>,
     ) -> anyhow::Result<()> {
-        check_command_exists("zig")?;
+        command::check_exists("zig")?;
         let args = self.build_args(files, target);
-        match run_command(self.command, &args, Some(cwd)).await? {
+        match command::run(self.command, &args, Some(cwd)).await? {
             true => Ok(()),
             false => anyhow::bail!("Failed to compile files"),
         }

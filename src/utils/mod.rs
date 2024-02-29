@@ -1,11 +1,11 @@
-mod backups;
+mod paths;
+mod renderer;
+
+pub mod archives;
 pub mod command;
 pub mod fs;
 pub mod http;
-mod paths;
-pub mod renderer;
 
-pub use self::backups::Backups;
 pub use self::paths::PATHS;
 
 #[macro_export]

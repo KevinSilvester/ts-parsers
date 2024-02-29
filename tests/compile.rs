@@ -1,16 +1,9 @@
 mod utils;
 
-use std::path::PathBuf;
-
 use assert_cmd::Command;
-use lazy_static::lazy_static;
-use utils::WANT_PARSERS;
+use utils::{OUTPUTS, WANTED_PARSERS};
 
 use crate::utils::setup;
-
-lazy_static! {
-    static ref OUTPUTS: PathBuf = PathBuf::from("tests").join("outputs");
-}
 
 #[test]
 fn test_compile_specific() {
@@ -39,7 +32,7 @@ fn test_compile_wanted() {
     setup(&dir);
 
     let mut cmd = Command::cargo_bin("ts-parsers").unwrap();
-    cmd.env("TS_PARSERS_TEST_DIR", &dir);
+    cmd.env("TS_PARSERS_WANTED_PARSERS", "tests/fixtures/wanted-parsers.txt");
     cmd.args([
         "compile",
         "--destination",
@@ -48,7 +41,7 @@ fn test_compile_wanted() {
     ]);
     cmd.assert().success();
 
-    for lang in WANT_PARSERS {
+    for lang in WANTED_PARSERS.iter() {
         assert!(dir.join(format!("{lang}.so")).exists());
     }
 }

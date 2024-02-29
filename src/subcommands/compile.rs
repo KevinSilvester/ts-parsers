@@ -2,9 +2,9 @@ use std::path::PathBuf;
 
 use crate::{
     c_println,
-    compiler::{Clang, Compiler, Compilers, Zig, ZigTargets},
+    compiler::{Compiler, Compilers, Zig, ZigTargets, CC},
     data::{changelog::ChangeLog, parsers::Parsers},
-    parser::Parser,
+    ops::parser_ops,
 };
 
 use super::Subcommand;
@@ -51,7 +51,8 @@ pub struct Compile {
 impl Compile {
     fn select_compiler(&self) -> Box<dyn Compiler> {
         match self.compiler {
-            Compilers::Clang => Box::new(Clang::new()),
+            Compilers::Clang => Box::new(CC::new(CC::CLANG)),
+            Compilers::Gcc => Box::new(CC::new(CC::GCC)),
             Compilers::Zig => Box::new(Zig::new()),
         }
     }
@@ -85,7 +86,7 @@ impl Compile {
 #[async_trait::async_trait]
 impl Subcommand for Compile {
     async fn run(&self) -> anyhow::Result<()> {
-        let compiler = self.select_compiler();
+        let compiler = &*self.select_compiler();
         let mut parsers = Parsers::new()?;
         let mut changelog = ChangeLog::new();
 
@@ -94,9 +95,9 @@ impl Subcommand for Compile {
         parsers.fetch_list(&self.tag).await?;
 
         let langs = &self.select_langs(&parsers)?;
-        Parser::check_compile_deps(&compiler)?;
+        parser_ops::check_compile_deps(compiler)?;
 
-        for (idx, lang) in langs.clone().iter().enumerate() {
+        for (idx, lang) in langs.iter().enumerate() {
             c_println!(
                 blue,
                 "\n{}/{}. Compiling parser {lang}",
@@ -104,7 +105,7 @@ impl Subcommand for Compile {
                 langs.len()
             );
             let parser = parsers.get_parser(lang).unwrap();
-            Parser::compile(lang, parser, &compiler, &self.target, &self.destination).await?;
+            parser_ops::compile(lang, parser, compiler, &self.target, &self.destination).await?;
         }
         Ok(())
     }

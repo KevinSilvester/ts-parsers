@@ -1,16 +1,13 @@
 use crate::{
     c_println,
-    compiler::{Clang, Compiler, Compilers, Zig},
+    compiler::{Compiler, Compilers, Zig, CC},
     data::{
         changelog::ChangeLog,
         parsers::Parsers,
         state::{ParserInstallMethod, State},
     },
-    parser::Parser,
-    utils::{
-        fs::{copy_all, remove_all},
-        Backups, PATHS,
-    },
+    ops::{backups_ops, parser_ops},
+    utils::{fs as ufs, PATHS},
 };
 
 use super::Subcommand;
@@ -54,7 +51,8 @@ pub struct Install {
 impl Install {
     fn select_compiler(&self) -> Box<dyn Compiler> {
         match self.compiler {
-            Compilers::Clang => Box::new(Clang::new()),
+            Compilers::Clang => Box::new(CC::new(CC::CLANG)),
+            Compilers::Gcc => Box::new(CC::new(CC::GCC)),
             Compilers::Zig => Box::new(Zig::new()),
         }
     }
@@ -94,7 +92,7 @@ impl Install {
 #[async_trait::async_trait]
 impl Subcommand for Install {
     async fn run(&self) -> anyhow::Result<()> {
-        let compiler: Box<dyn Compiler> = self.select_compiler();
+        let compiler: &dyn Compiler = &*self.select_compiler();
         let mut state = State::new()?;
         let mut parsers = Parsers::new()?;
         let mut changelog = ChangeLog::new();
@@ -103,7 +101,7 @@ impl Subcommand for Install {
         changelog.check_entry(&self.tag)?;
         parsers.fetch_list(&self.tag).await?;
 
-        let destination = PATHS.ts_parsers.join("install-tmp");
+        let destination = PATHS.ts_parsers.join(".install-tmp");
         self.cleanup()?;
 
         let langs = self.select_langs(&parsers)?;
@@ -122,12 +120,12 @@ impl Subcommand for Install {
 
         match self.method {
             ParserInstallMethod::Compile => {
-                Parser::check_compile_deps(&compiler)?;
+                parser_ops::check_compile_deps(compiler)?;
 
-                for (idx, lang) in langs.clone().iter().enumerate() {
+                for (idx, lang) in langs.iter().enumerate() {
                     c_println!(blue, "\n{}/{}. {msg} {lang}", (idx + 1), langs.len());
                     let parser = parsers.get_parser(lang).unwrap();
-                    Parser::compile(lang, parser, &compiler, &None, &destination).await?;
+                    parser_ops::compile(lang, parser, compiler, &None, &destination).await?;
                     state.add_parser(lang, &tag, ParserInstallMethod::Compile, parser);
                 }
             }
@@ -138,18 +136,18 @@ impl Subcommand for Install {
         }
 
         if self.force {
-            Backups::create_backup(&mut state, &format!("{tag}-force"))?;
+            backups_ops::create_backup(&mut state, &format!("{tag}-force"))?;
         }
-        copy_all(destination, PATHS.ts_parsers.join("parsers"))?;
+        ufs::copy_all(destination, PATHS.ts_parsers.join("parsers"))?;
 
         state.commit()?;
         Ok(())
     }
 
     fn cleanup(&self) -> anyhow::Result<()> {
-        let destination = PATHS.ts_parsers.join("install-tmp");
+        let destination = PATHS.ts_parsers.join(".install-tmp");
         if destination.exists() {
-            remove_all(&destination)?;
+            ufs::remove_all(&destination)?;
         }
         Ok(())
     }

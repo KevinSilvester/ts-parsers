@@ -11,17 +11,6 @@ pub struct Renderer<W> {
     stdout: W,
 }
 
-// impl<W> Renderer<W> {
-//     pub fn new(writer: W) -> Self {
-//         Self {
-//             is_first_render: true,
-//             line_count: 0,
-//             prev_line_count: 0,
-//             stdout: writer,
-//         }
-//     }
-// }
-
 impl<W: Write> Renderer<W> {
     pub fn new(writer: W) -> Self {
         Self {

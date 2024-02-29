@@ -4,7 +4,7 @@ use lazy_static::lazy_static;
 
 #[derive(Debug, Clone)]
 pub struct Paths {
-    pub nvim_config: PathBuf,
+    pub wanted_parsers: PathBuf,
     pub ts_parsers: PathBuf,
 }
 
@@ -16,8 +16,8 @@ const NVIM_DATA_DIR: &str = "nvim-data";
 #[cfg(unix)]
 const NVIM_DATA_DIR: &str = "nvim";
 
-#[cfg(not(test))]
 impl Paths {
+    #[cfg(not(test))]
     pub fn new() -> Self {
         use cfg_if::cfg_if;
 
@@ -31,25 +31,26 @@ impl Paths {
             }
         }
 
-        // variable is set with `assert_cmd` for subcommand integration tests
-        match std::env::var("TS_PARSERS_TEST_DIR") {
-            Ok(dir) => Self {
-                nvim_config: PathBuf::from(&dir),
-                ts_parsers: PathBuf::from(&dir),
-            },
-            Err(_) => Self {
-                nvim_config: local_config_dir.join("nvim"),
-                ts_parsers: local_data_dir.join(NVIM_DATA_DIR).join("ts-parsers"),
-            },
+        let wanted_parsers = match std::env::var("TS_PARSERS_WANTED_PARSERS") {
+            Ok(dir) => PathBuf::from(&dir),
+            Err(_) => local_config_dir.join("nvim").join("wanted-parsers.txt"),
+        };
+
+        let ts_parsers = match std::env::var("TS_PARSERS_DATA") {
+            Ok(dir) => PathBuf::from(&dir),
+            Err(_) => local_data_dir.join(NVIM_DATA_DIR).join("ts-parsers"),
+        };
+
+        Self {
+            wanted_parsers,
+            ts_parsers,
         }
     }
-}
 
-#[cfg(test)]
-impl Paths {
+    #[cfg(test)]
     pub fn new() -> Self {
         Self {
-            nvim_config: PathBuf::from("tests").join("outputs").join("unit-tests"),
+            wanted_parsers: PathBuf::from("tests").join("fixtures").join("wanted-parsers.txt"),
             ts_parsers: PathBuf::from("tests").join("outputs").join("unit-tests"),
         }
     }

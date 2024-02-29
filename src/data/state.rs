@@ -123,23 +123,7 @@ impl State {
         parser.tag = tag.to_owned();
         parser.url = parser_info.url.clone();
         parser.install_method = install_method;
-
-        // let parser_state = ParserState {
-        //     last_modified: Utc::now(),
-        //     revision: parser_info.revision.clone(),
-        //     tag: tag.to_owned(),
-        //     url: parser_info.url.clone(),
-        //     install_method,
-        //     ..ParserState::default()
-        // };
-        // self.parsers.insert(name.to_owned(), parser_state);
     }
-
-    // pub fn update_parser(&mut self, name: &str, mut parser: ParserState) -> anyhow::Result<()> {
-    //     parser.last_modified = Utc::now();
-    //     *self.parsers.get_mut(name).unwrap() = parser;
-    //     Ok(())
-    // }
 
     // pub fn toggle_lock(&mut self, name: &str) -> anyhow::Result<()> {
     //     let parser = self.parsers.get_mut(name).unwrap();
@@ -226,11 +210,14 @@ mod tests {
             &new_parser_info,
         );
 
-        let  current_lang_state = state.parsers.get("Test").unwrap().clone();
-        
+        let current_lang_state = state.parsers.get("Test").unwrap().clone();
+
         assert_eq!(current_lang_state.revision, "new");
         assert_eq!(current_lang_state.tag, "new");
         assert_eq!(current_lang_state.url, "https://new.com");
-        assert_eq!(current_lang_state.install_method, ParserInstallMethod::Download);
+        assert_eq!(
+            current_lang_state.install_method,
+            ParserInstallMethod::Download
+        );
     }
 }

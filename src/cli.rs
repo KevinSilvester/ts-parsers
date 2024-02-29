@@ -15,17 +15,17 @@ const STYLES: Styles = Styles::styled()
 #[derive(Debug, Parser)]
 #[clap(version, about, styles = STYLES)]
 pub enum Cli {
-    // /// Create/restore backups of installed tree-sitter parsers
-    // #[clap(name = "backups")]
-    // Backups,
+    /// Create/restore backups of installed tree-sitter parsers
+    #[clap(name = "backups")]
+    Backups,
 
-    // /// Display changelog for nvim-treesitter-parsers
-    // #[clap(name = "changelog")]
-    // Changelog,
+    /// Display changelog for nvim-treesitter-parsers
+    #[clap(name = "changelog")]
+    Changelog,
 
-    // /// Clear the download cache/backups
-    // #[clap(name = "clear")]
-    // Clear,
+    /// Clean the download cache,backups and dangling compile artefacts
+    #[clap(name = "clean")]
+    Clean,
 
     /// Compile tree-sitter parsers with zig or clang to a target directory
     #[clap(name = "compile")]
@@ -35,17 +35,17 @@ pub enum Cli {
     #[clap(name = "install")]
     Install(Install),
 
-    // /// Lock the current state of installed tree-sitter parsers
-    // #[clap(name = "lock")]
-    // Lock,
+    /// Lock the current state of installed tree-sitter parsers
+    #[clap(name = "lock")]
+    Lock,
 
-    // /// Self update
-    // #[clap(name = "self-update")]
-    // SelfUpdate,
+    /// Self update
+    #[clap(name = "self-update")]
+    SelfUpdate,
 
-    // /// List all tree-sitter parsers (installed and available)
-    // #[clap(name = "parsers")]
-    // Parsers,
+    /// List all tree-sitter parsers (installed and available)
+    #[clap(name = "parsers")]
+    Parsers,
 
     /// Uninstall tree-sitter parsers
     #[clap(name = "uninstall")]
@@ -55,9 +55,9 @@ pub enum Cli {
     #[clap(name = "update")]
     Update(Update),
 
-    // /// Unlock the current state of installed tree-sitter parsers
-    // #[clap(name = "unlock")]
-    // Unlock,
+    /// Unlock the current state of installed tree-sitter parsers
+    #[clap(name = "unlock")]
+    Unlock,
 }
 
 impl Cli {
@@ -66,9 +66,7 @@ impl Cli {
             Self::Compile(cmd) => cmd.run().await?,
             Self::Install(cmd) => cmd.run().await?,
             Self::Update(cmd) => cmd.run().await?,
-            _ => {
-                todo!("run other commands")
-            }
+            _ => anyhow::bail!("Subcommand '{:?}' not implemented yet!", self),
         }
         Ok(())
     }

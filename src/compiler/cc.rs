@@ -1,17 +1,20 @@
 use std::path::Path;
 
-use crate::utils::command::{check_command_exists, run_command};
+use crate::utils::command;
 
 use super::{zig::ZigTargets, Compiler};
 
 #[derive(Debug)]
-pub struct Clang<'a> {
+pub struct CC<'a> {
     command: &'a str,
     base_args: &'a [&'a str],
 }
 
-impl<'a> Clang<'a> {
-    pub fn new() -> Self {
+impl<'a> CC<'a> {
+    pub const GCC: &'static str = "gcc";
+    pub const CLANG: &'static str = "clang";
+
+    pub fn new(command: &'a str) -> Self {
         #[cfg(target_os = "linux")]
         let base_args = &["-o", "out.so", "-Os", "-shared", "-fPIC"];
 
@@ -21,10 +24,7 @@ impl<'a> Clang<'a> {
         #[cfg(target_os = "windows")]
         let base_args = &["-o", "out.so", "-Os", "-shared"];
 
-        Self {
-            command: "clang",
-            base_args,
-        }
+        Self { command, base_args }
     }
 
     fn build_args(&self, files: &'a [&'a str]) -> Vec<&'a str> {
@@ -45,7 +45,7 @@ impl<'a> Clang<'a> {
 }
 
 #[async_trait::async_trait]
-impl Compiler for Clang<'_> {
+impl Compiler for CC<'_> {
     fn get_name(&self) -> &str {
         "clang"
     }
@@ -56,9 +56,9 @@ impl Compiler for Clang<'_> {
         cwd: &Path,
         _: &Option<ZigTargets>,
     ) -> anyhow::Result<()> {
-        check_command_exists("clang")?;
+        command::check_exists("clang")?;
         let args = self.build_args(files);
-        match run_command(self.command, &args, Some(cwd)).await? {
+        match command::run(self.command, &args, Some(cwd)).await? {
             true => Ok(()),
             false => anyhow::bail!("Failed to compile files"),
         }
@@ -71,7 +71,7 @@ mod tests {
 
     #[test]
     fn test_build_args() {
-        let clang = Clang::new();
+        let clang = CC::new(CC::CLANG);
         let files = &["src/scanner.c", "src/parser.cc"];
         let args = clang.build_args(files);
 

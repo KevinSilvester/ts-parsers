@@ -1,36 +1,39 @@
 use std::{collections::VecDeque, path::Path, println, process::Stdio};
 
 use ansi_term::Colour;
-use strip_ansi_escapes::strip;
+use lazy_static::lazy_static;
+use strip_ansi_escapes::strip_str;
 use tokio::process::Command;
 use tokio_process_stream::{Item, ProcessLineStream};
 use tokio_stream::StreamExt;
 
-use crate::{c_println, utils::renderer::Renderer};
+use crate::utils::renderer::Renderer;
 
-pub fn check_command_exists(command: &str) -> anyhow::Result<()> {
+const MAX_LINES: usize = 20;
+
+lazy_static! {
+    static ref TURQUOISE: Colour = Colour::RGB(66, 242, 245);
+    static ref BLUE: Colour = Colour::RGB(2, 149, 235);
+    static ref RED: Colour = Colour::RGB(235, 66, 66);
+    static ref GREEN: Colour = Colour::RGB(57, 219, 57);
+}
+
+pub fn check_exists(command: &str) -> anyhow::Result<()> {
     match std::process::Command::new(command)
         .stdout(Stdio::null())
         .output()
     {
         Ok(_) => Ok(()),
-        Err(e) => match e.kind() {
+        Err(error) => match error.kind() {
             std::io::ErrorKind::NotFound | std::io::ErrorKind::PermissionDenied => {
-                c_println!(red, "ERROR: `{}` not found", command);
-                anyhow::bail!(e)
+                anyhow::bail!("Command '{command}' not found: {error}")
             }
             _ => Ok(()),
         },
     }
 }
 
-fn clean_string(s: &str) -> String {
-    let bytes = s.as_bytes();
-    strip(bytes);
-    String::from_utf8(Vec::from(bytes)).unwrap()
-}
-
-pub async fn run_command(
+pub async fn run(
     name: &str,
     args: &[&str],
     cwd: Option<impl AsRef<Path>>,
@@ -41,28 +44,21 @@ pub async fn run_command(
         command.current_dir(cwd);
     }
 
-    let turquoise = Colour::RGB(66, 242, 245);
-    let blue = Colour::RGB(2, 149, 235);
-    let red = Colour::RGB(235, 66, 66);
-    let green = Colour::RGB(57, 219, 57);
-
-    let max_lines: usize = 20;
-
     let mut renderer = Renderer::new(std::io::stdout());
-    let mut out_queue: VecDeque<String> = VecDeque::with_capacity(max_lines);
+    let mut out_queue: VecDeque<String> = VecDeque::with_capacity(MAX_LINES);
     let mut is_finished = false;
     let mut failed = false;
 
     println!(
         "{} {} {} {}",
-        turquoise.paint("=>"),
+        TURQUOISE.paint("=>"),
         name,
         args.join(" "),
-        blue.paint("(running...)")
+        BLUE.paint("(running...)")
     );
     let mut procstream = ProcessLineStream::try_from(command)?;
 
-    for _ in 0..max_lines {
+    for _ in 0..MAX_LINES {
         if let Some(item) = procstream.next().await {
             match item {
                 Item::Done(status) => {
@@ -71,10 +67,10 @@ pub async fn run_command(
                     break;
                 }
                 Item::Stdout(out) => {
-                    out_queue.push_back(format!("   {} {}", blue.paint("=>"), clean_string(&out)));
+                    out_queue.push_back(format!("   {} {}", BLUE.paint("=>"), strip_str(&out)));
                 }
                 Item::Stderr(err) => {
-                    out_queue.push_back(format!("   {} {}", red.paint("=>"), clean_string(&err)));
+                    out_queue.push_back(format!("   {} {}", RED.paint("=>"), strip_str(&err)));
                 }
             }
             renderer.render_queue(&out_queue)?;
@@ -93,10 +89,10 @@ pub async fn run_command(
                     break;
                 }
                 Item::Stdout(out) => {
-                    out_queue.push_back(format!("   {} {}", blue.paint("=>"), clean_string(&out)));
+                    out_queue.push_back(format!("   {} {}", BLUE.paint("=>"), strip_str(&out)));
                 }
                 Item::Stderr(err) => {
-                    out_queue.push_back(format!("   {} {}", red.paint("=>"), clean_string(&err)));
+                    out_queue.push_back(format!("   {} {}", RED.paint("=>"), strip_str(&err)));
                 }
             }
             renderer.render_queue(&out_queue)?;
@@ -108,20 +104,20 @@ pub async fn run_command(
     if failed {
         eprintln!(
             "{} {} {} {}",
-            red.paint("=>"),
+            RED.paint("=>"),
             name,
             args.join(" "),
-            red.paint("(failed!)")
+            RED.paint("(failed!)")
         );
         return Ok(false);
     }
 
     println!(
         "{} {} {} {}",
-        turquoise.paint("=>"),
+        TURQUOISE.paint("=>"),
         name,
         args.join(" "),
-        green.paint("(complete!)")
+        GREEN.paint("(complete!)")
     );
 
     Ok(true)

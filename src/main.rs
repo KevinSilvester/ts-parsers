@@ -1,7 +1,7 @@
 mod cli;
 mod compiler;
 mod data;
-mod parser;
+mod ops;
 mod subcommands;
 mod utils;
 

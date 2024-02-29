@@ -1,16 +1,13 @@
 use crate::{
     c_println,
-    compiler::{Clang, Compiler, Compilers, Zig},
+    compiler::{Compiler, Compilers, Zig, CC},
     data::{
         changelog::ChangeLog,
         parsers::Parsers,
         state::{ParserInstallMethod, State},
     },
-    parser::Parser,
-    utils::{
-        fs::{copy_all, remove_all},
-        Backups, PATHS,
-    },
+    ops::{backups_ops, parser_ops},
+    utils::{fs as ufs, PATHS},
 };
 
 use super::Subcommand;
@@ -44,7 +41,8 @@ pub struct Update {
 impl Update {
     fn select_compiler(&self) -> Box<dyn Compiler> {
         match self.compiler {
-            Compilers::Clang => Box::new(Clang::new()),
+            Compilers::Clang => Box::new(CC::new(CC::CLANG)),
+            Compilers::Gcc => Box::new(CC::new(CC::GCC)),
             Compilers::Zig => Box::new(Zig::new()),
         }
     }
@@ -78,7 +76,7 @@ impl Update {
 #[async_trait::async_trait]
 impl Subcommand for Update {
     async fn run(&self) -> anyhow::Result<()> {
-        let compiler: Box<dyn Compiler> = self.select_compiler();
+        let compiler = &*self.select_compiler();
         let mut state = State::new()?;
         let mut parsers = Parsers::new()?;
         let mut changelog = ChangeLog::new();
@@ -87,7 +85,7 @@ impl Subcommand for Update {
         changelog.check_entry(&None)?;
         parsers.fetch_list(&None).await?;
 
-        let destination = PATHS.ts_parsers.join("update-tmp");
+        let destination = PATHS.ts_parsers.join(".update-tmp");
         self.cleanup()?;
 
         let langs = self.select_langs(&parsers)?;
@@ -122,9 +120,9 @@ impl Subcommand for Update {
 
         match self.method {
             ParserInstallMethod::Compile => {
-                Parser::check_compile_deps(&compiler)?;
+                parser_ops::check_compile_deps(compiler)?;
 
-                for (idx, lang) in to_update.clone().iter().enumerate() {
+                for (idx, lang) in to_update.iter().enumerate() {
                     c_println!(
                         blue,
                         "\n{}/{}. Updating parser {lang}",
@@ -132,7 +130,7 @@ impl Subcommand for Update {
                         to_update.len()
                     );
                     let parser = parsers.get_parser(lang).unwrap();
-                    Parser::compile(lang, parser, &compiler, &None, &destination).await?;
+                    parser_ops::compile(lang, parser, compiler, &None, &destination).await?;
                     state.update_parser(lang, &tag, ParserInstallMethod::Compile, parser);
                 }
             }
@@ -142,17 +140,17 @@ impl Subcommand for Update {
             }
         }
 
-        Backups::create_backup(&mut state, &tag)?;
-        copy_all(destination, PATHS.ts_parsers.join("parsers"))?;
+        backups_ops::create_backup(&mut state, &tag)?;
+        ufs::copy_all(destination, PATHS.ts_parsers.join("parsers"))?;
         state.commit()?;
 
         Ok(())
     }
 
     fn cleanup(&self) -> anyhow::Result<()> {
-        let destination = PATHS.ts_parsers.join("update-tmp");
+        let destination = PATHS.ts_parsers.join(".update-tmp");
         if destination.exists() {
-            remove_all(&destination)?;
+            ufs::remove_all(&destination)?;
         }
         Ok(())
     }

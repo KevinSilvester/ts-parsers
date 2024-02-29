@@ -21,12 +21,14 @@ pub struct Parsers {
 
 impl Parsers {
     pub fn new() -> anyhow::Result<Self> {
-        let wanted_file = PATHS.nvim_config.join("wanted-parsers.txt");
+        let wanted_file = &PATHS.wanted_parsers;
 
         let wanted = match wanted_file.is_file() {
             true => Some(
-                std::fs::read_to_string(&wanted_file)?
+                std::fs::read_to_string(wanted_file)?
                     .lines()
+                    .map(str::trim)
+                    .filter(|line| !line.is_empty())
                     .map(str::to_string)
                     .collect(),
             ),

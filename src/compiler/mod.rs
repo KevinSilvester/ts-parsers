@@ -1,4 +1,4 @@
-mod clang;
+mod cc;
 mod zig;
 
 use std::path::Path;
@@ -19,8 +19,9 @@ pub trait Compiler: Send + Sync {
 pub enum Compilers {
     #[default]
     Clang,
+    Gcc,
     Zig,
 }
 
-pub use self::clang::Clang;
+pub use self::cc::CC;
 pub use self::zig::{Zig, ZigTargets};
