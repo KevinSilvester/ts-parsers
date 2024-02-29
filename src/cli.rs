@@ -3,7 +3,7 @@ use clap::{
     Parser,
 };
 
-use crate::subcommands::{Compile, Install, Subcommand, Update};
+use crate::subcommands::{Compile, Install, Subcommand, Uninstall, Update};
 
 const STYLES: Styles = Styles::styled()
     .header(AnsiColor::Yellow.on_default())
@@ -49,7 +49,7 @@ pub enum Cli {
 
     /// Uninstall tree-sitter parsers
     #[clap(name = "uninstall")]
-    Uninstall,
+    Uninstall(Uninstall),
 
     /// Update installed tree-sitter parsers
     #[clap(name = "update")]
@@ -66,6 +66,7 @@ impl Cli {
             Self::Compile(cmd) => cmd.run().await?,
             Self::Install(cmd) => cmd.run().await?,
             Self::Update(cmd) => cmd.run().await?,
+            Self::Uninstall(cmd) => cmd.run().await?,
             _ => anyhow::bail!("Subcommand '{:?}' not implemented yet!", self),
         }
         Ok(())

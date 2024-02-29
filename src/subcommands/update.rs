@@ -33,7 +33,7 @@ pub struct Update {
     #[clap(short, long, default_value = "false", conflicts_with_all = ["all", "parsers"] )]
     wanted: bool,
 
-    /// Parsers to compile (cannot be used with --all or --wanted)
+    /// Update specific (cannot be used with --all or --wanted)
     #[clap(conflicts_with = "all")]
     parsers: Vec<String>,
 }
@@ -101,15 +101,22 @@ impl Subcommand for Update {
             c_println!(amber, "Parsers are not installed: {:?}", not_installed);
         }
 
+        let is_locked = &is_installed
+            .iter()
+            .filter(|lang| state.is_locked(lang))
+            .collect::<Vec<_>>();
         let up_to_date = &is_installed
             .iter()
             .filter(|lang| state.is_up_to_date(lang, &tag))
             .collect::<Vec<_>>();
         let to_update = &is_installed
             .iter()
-            .filter(|lang| !state.is_up_to_date(lang, &tag))
+            .filter(|lang| !state.is_up_to_date(lang, &tag) && !state.is_locked(lang))
             .collect::<Vec<_>>();
 
+        if !is_locked.is_empty() {
+            c_println!(amber, "Parsers are locked: {:?}", is_locked);
+        }
         if !up_to_date.is_empty() {
             c_println!(blue, "Parsers are already up-to-date: {:?}", up_to_date);
         }
@@ -117,6 +124,8 @@ impl Subcommand for Update {
             c_println!(blue, "No parsers to update!");
             return Ok(());
         }
+
+        backups_ops::create_backup(&mut state, &format!("{tag}-update"))?;
 
         match self.method {
             ParserInstallMethod::Compile => {
@@ -140,8 +149,7 @@ impl Subcommand for Update {
             }
         }
 
-        backups_ops::create_backup(&mut state, &tag)?;
-        ufs::copy_all(destination, PATHS.ts_parsers.join("parsers"))?;
+        ufs::copy_all(&destination, &PATHS.ts_parsers.join("parsers"))?;
         state.commit()?;
 
         Ok(())

@@ -20,6 +20,18 @@ pub fn check_compile_deps(compiler: &dyn Compiler) -> anyhow::Result<()> {
     Ok(())
 }
 
+pub fn uninstall(lang: &str, destination: &Path) -> anyhow::Result<()> {
+    let lang_so = format!("{lang}.so");
+    let lang_so = PathBuf::from(lang_so);
+    let lang_so = destination.join(lang_so);
+    if lang_so.exists() {
+        std::fs::remove_file(lang_so)?;
+    } else {
+        anyhow::bail!("Parser {lang} is not installed");
+    }
+    Ok(())
+}
+
 pub async fn compile(
     lang: &str,
     parser_info: &ParserInfo,

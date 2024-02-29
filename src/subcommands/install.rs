@@ -39,7 +39,7 @@ pub struct Install {
     #[clap(short, long, default_value = "false", conflicts_with_all = ["all", "parsers"] )]
     wanted: bool,
 
-    /// Parsers to compile (cannot be used with --all or --wanted)
+    /// Install specific parsers (cannot be used with --all or --wanted)
     #[clap(conflicts_with = "all")]
     parsers: Vec<String>,
 
@@ -118,6 +118,10 @@ impl Subcommand for Install {
             false => "Installing parser",
         };
 
+        if self.force {
+            backups_ops::create_backup(&mut state, &format!("{tag}-force-install"))?;
+        }
+
         match self.method {
             ParserInstallMethod::Compile => {
                 parser_ops::check_compile_deps(compiler)?;
@@ -135,10 +139,7 @@ impl Subcommand for Install {
             }
         }
 
-        if self.force {
-            backups_ops::create_backup(&mut state, &format!("{tag}-force"))?;
-        }
-        ufs::copy_all(destination, PATHS.ts_parsers.join("parsers"))?;
+        ufs::copy_all(&destination, &PATHS.ts_parsers.join("parsers"))?;
 
         state.commit()?;
         Ok(())

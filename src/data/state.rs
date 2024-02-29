@@ -125,11 +125,19 @@ impl State {
         parser.install_method = install_method;
     }
 
-    // pub fn toggle_lock(&mut self, name: &str) -> anyhow::Result<()> {
-    //     let parser = self.parsers.get_mut(name).unwrap();
-    //     self.parsers.get_mut(name).unwrap().locked = !parser.locked;
-    //     Ok(())
-    // }
+    pub fn remove_parser(&mut self, name: &str) {
+        self.parsers.remove(name);
+    }
+
+    pub fn is_locked(&self, name: &str) -> bool {
+        self.parsers.get(name).unwrap().locked
+    }
+
+    pub fn toggle_lock(&mut self, name: &str) -> anyhow::Result<()> {
+        let parser = self.parsers.get(name).unwrap();
+        self.parsers.get_mut(name).unwrap().locked = !parser.locked;
+        Ok(())
+    }
 
     pub fn append_restore_point(&mut self, restore_point: RestorePoint) {
         self.restore_points.push_back(restore_point);
@@ -171,23 +179,6 @@ mod tests {
 
         assert!(state.parsers.get("Test").is_some());
     }
-
-    // #[test]
-    // fn test_parser_remove() {
-    //     let new_lang = "new_lang".to_string();
-    //     let new_lang_state = ParserState {
-    //         revision: "revision".to_string(),
-    //         tag: "tag".to_string(),
-    //         url: "https://url.com".to_string(),
-    //         install_method: ParserInstallMethod::Copmiled,
-    //         ..ParserState::default()
-    //     };
-
-    //     let mut state = State::new().unwrap();
-    //     state.add_parser(new_lang.clone(), new_lang_state).unwrap();
-    //     state.remove_parser(&new_lang).unwrap();
-    //     assert!(!state.check_parser(&new_lang));
-    // }
 
     #[test]
     fn test_parser_update() {

@@ -1,5 +1,6 @@
 mod compile;
 mod install;
+mod uninstall;
 mod update;
 
 #[async_trait::async_trait]
@@ -10,4 +11,5 @@ pub trait Subcommand {
 
 pub use self::compile::Compile;
 pub use self::install::Install;
+pub use self::uninstall::Uninstall;
 pub use self::update::Update;
