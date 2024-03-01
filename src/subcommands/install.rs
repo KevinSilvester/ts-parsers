@@ -26,16 +26,15 @@ pub struct Install {
     #[clap(short, long, default_value = "false")]
     all: bool,
 
-    /// `nvim-treesitter-parsers` tags to use
-    ///
-    /// Will only use tags present in the changelog
+    /// 'nvim-treesitter-parsers' tags to use.
+    /// Will only use tags present in the changelog.
     /// (defaults to latest tag)
     ///
     /// See https://github.com/KevinSilvester/nvim-treesitter-parerers
-    #[clap(long)]
+    #[clap(long, verbatim_doc_comment)]
     tag: Option<String>,
 
-    /// Compile parsers in `wanted-parsers.txt`
+    /// Compile parsers in 'wanted-parsers.txt'
     #[clap(short, long, default_value = "false", conflicts_with_all = ["all", "parsers"] )]
     wanted: bool,
 

@@ -13,11 +13,11 @@ pub struct Uninstall {
     #[clap(short, long, default_value = "false")]
     all: bool,
 
-    /// Uninstall parsers in `wanted-parsers.txt`.
+    /// Uninstall parsers in 'wanted-parsers.txt'.
     /// This will only uninstall parsers that are already installed.
     ///
     /// Cannot be used with --all or [PARSERS...]
-    #[clap(short, long, default_value = "false", conflicts_with_all = ["all", "parsers"] )]
+    #[clap(short, long, default_value = "false", conflicts_with_all = ["all", "parsers"], verbatim_doc_comment)]
     wanted: bool,
 
     /// Uninstall specific parsers (cannot be used with --all or --wanted)

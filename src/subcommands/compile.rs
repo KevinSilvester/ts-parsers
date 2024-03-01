@@ -16,10 +16,9 @@ pub struct Compile {
     compiler: Compilers,
 
     /// Zig compile target
-    ///
     /// Only used when compiler is zig.
     /// (defaults to host architecture)
-    #[clap(short, long, value_enum)]
+    #[clap(short, long, value_enum, verbatim_doc_comment)]
     target: Option<ZigTargets>,
 
     /// Compile all parsers
@@ -30,16 +29,15 @@ pub struct Compile {
     #[clap(short, long)]
     destination: PathBuf,
 
-    /// `nvim-treesitter-parsers` tags to use
-    ///
-    /// Will only use tags present in the changelog
+    /// 'nvim-treesitter-parsers' tags to use.
+    /// Will only use tags present in the changelog.
     /// (defaults to latest tag)
     ///
     /// See https://github.com/KevinSilvester/nvim-treesitter-parerers
-    #[clap(long)]
+    #[clap(long, verbatim_doc_comment)]
     tag: Option<String>,
 
-    /// Compile parsers in `wanted-parsers.txt`
+    /// Compile parsers in 'wanted-parsers.txt'
     #[clap(short, long, default_value = "false", conflicts_with_all = ["all", "parsers"] )]
     wanted: bool,
 

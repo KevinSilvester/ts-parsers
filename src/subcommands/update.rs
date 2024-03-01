@@ -26,11 +26,11 @@ pub struct Update {
     #[clap(short, long, default_value = "false")]
     all: bool,
 
-    /// Update parsers in `wanted-parsers.txt`.
+    /// Update parsers in 'wanted-parsers.txt'.
     /// This will only update parsers that are already installed.
     ///
     /// Cannot be used with --all or [PARSERS...]
-    #[clap(short, long, default_value = "false", conflicts_with_all = ["all", "parsers"] )]
+    #[clap(short, long, default_value = "false", conflicts_with_all = ["all", "parsers"], verbatim_doc_comment)]
     wanted: bool,
 
     /// Update specific (cannot be used with --all or --wanted)

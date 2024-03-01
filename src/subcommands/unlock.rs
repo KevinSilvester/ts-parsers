@@ -15,7 +15,7 @@ pub struct Unlock {
     /// This will only uninstall parsers that are already installed.
     ///
     /// Cannot be used with --all or [PARSERS...]
-    #[clap(short, long, default_value = "false", conflicts_with_all = ["all", "parsers"] )]
+    #[clap(short, long, default_value = "false", conflicts_with_all = ["all", "parsers"], verbatim_doc_comment)]
     wanted: bool,
 
     /// Unlock specific parsers (cannot be used with --all or --wanted)
