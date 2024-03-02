@@ -86,6 +86,14 @@ impl Install {
 
         Ok(langs)
     }
+
+    fn cleanup(&self) -> anyhow::Result<()> {
+        let destination = PATHS.ts_parsers.join(".install-tmp");
+        if destination.exists() {
+            ufs::remove_all(&destination)?;
+        }
+        Ok(())
+    }
 }
 
 #[async_trait::async_trait]
@@ -138,17 +146,9 @@ impl Subcommand for Install {
             }
         }
 
-        ufs::copy_all(&destination, &PATHS.ts_parsers.join("parsers"))?;
+        ufs::copy_all(&destination, PATHS.ts_parsers.join("parsers"))?;
 
         state.commit()?;
-        Ok(())
-    }
-
-    fn cleanup(&self) -> anyhow::Result<()> {
-        let destination = PATHS.ts_parsers.join(".install-tmp");
-        if destination.exists() {
-            ufs::remove_all(&destination)?;
-        }
         Ok(())
     }
 }

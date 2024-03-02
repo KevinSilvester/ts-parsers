@@ -31,14 +31,14 @@ impl Paths {
             }
         }
 
-        let wanted_parsers = match std::env::var("TS_PARSERS_WANTED_PARSERS") {
-            Ok(dir) => PathBuf::from(&dir),
-            Err(_) => local_config_dir.join("nvim").join("wanted-parsers.txt"),
+        let wanted_parsers = match std::env::var("TS_PARSERS_WANTED_PARSERS").ok() {
+            Some(dir) => PathBuf::from(&dir),
+            None => local_config_dir.join("nvim").join("wanted-parsers.txt"),
         };
 
-        let ts_parsers = match std::env::var("TS_PARSERS_DATA") {
-            Ok(dir) => PathBuf::from(&dir),
-            Err(_) => local_data_dir.join(NVIM_DATA_DIR).join("ts-parsers"),
+        let ts_parsers = match std::env::var("TS_PARSERS_DATA").ok() {
+            Some(dir) => PathBuf::from(&dir),
+            None => local_data_dir.join(NVIM_DATA_DIR).join("ts-parsers"),
         };
 
         Self {

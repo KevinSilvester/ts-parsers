@@ -74,8 +74,4 @@ impl Subcommand for Lock {
 
         Ok(())
     }
-
-    fn cleanup(&self) -> anyhow::Result<()> {
-        Ok(())
-    }
 }

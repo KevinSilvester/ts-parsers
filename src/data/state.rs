@@ -49,7 +49,7 @@ pub struct RestorePoint {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct State {
     last_updated: DateTime<Utc>,
-    restore_points: VecDeque<RestorePoint>,
+    pub restore_points: VecDeque<RestorePoint>,
     pub parsers: BTreeMap<String, ParserState>,
 }
 
@@ -142,13 +142,60 @@ impl State {
     }
 
     pub fn append_restore_point(&mut self, restore_point: RestorePoint) {
-        self.restore_points.push_back(restore_point);
+        self.restore_points.push_front(restore_point);
     }
 
     pub fn create_backup(&self, path: impl AsRef<Path>) -> anyhow::Result<()> {
         let state_str = serde_json::to_string_pretty(&self.parsers)?;
         std::fs::write(path, state_str)?;
         Ok(())
+    }
+
+    pub fn restore_backup(&mut self, path: impl AsRef<Path>) -> anyhow::Result<()> {
+        let state_str = std::fs::read_to_string(path)?;
+        self.parsers = serde_json::from_str(&state_str)?;
+        Ok(())
+    }
+
+    pub fn get_restore_point(&self, id: usize) -> anyhow::Result<&RestorePoint> {
+        self.restore_points
+            .get(id)
+            .ok_or_else(|| anyhow::anyhow!("Invalid restore point '{id}'"))
+    }
+
+    pub fn check_restore_exists(&self, id: usize) -> anyhow::Result<bool> {
+        if self.restore_points.is_empty() {
+            anyhow::bail!("No restore points found");
+        }
+
+        match self.restore_points.get(id) {
+            Some(_) => Ok(true),
+            None => Ok(false),
+        }
+    }
+
+    pub fn delete_restore_point(&mut self, id: usize) {
+        self.restore_points.remove(id);
+    }
+
+    pub fn delete_all_restore_points(&mut self) {
+        self.restore_points.clear();
+    }
+
+    pub fn list_restore_points(&self) -> Vec<(String, String)> {
+        let mut restore_points = vec![];
+        for restore_point in self.restore_points.iter() {
+            let date = restore_point.date.format("%F %H:%M:%S").to_string();
+            let file_name = restore_point
+                .location
+                .file_name()
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .to_string();
+            restore_points.push((date, file_name));
+        }
+        restore_points
     }
 
     pub fn commit(&mut self) -> anyhow::Result<()> {

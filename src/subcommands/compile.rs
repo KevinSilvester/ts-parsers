@@ -107,8 +107,4 @@ impl Subcommand for Compile {
         }
         Ok(())
     }
-
-    fn cleanup(&self) -> anyhow::Result<()> {
-        Ok(())
-    }
 }

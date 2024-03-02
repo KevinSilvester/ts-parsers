@@ -71,6 +71,14 @@ impl Update {
 
         Ok(langs)
     }
+
+    fn cleanup(&self) -> anyhow::Result<()> {
+        let destination = PATHS.ts_parsers.join(".update-tmp");
+        if destination.exists() {
+            ufs::remove_all(&destination)?;
+        }
+        Ok(())
+    }
 }
 
 #[async_trait::async_trait]
@@ -149,17 +157,9 @@ impl Subcommand for Update {
             }
         }
 
-        ufs::copy_all(&destination, &PATHS.ts_parsers.join("parsers"))?;
+        ufs::copy_all(&destination, PATHS.ts_parsers.join("parsers"))?;
         state.commit()?;
 
-        Ok(())
-    }
-
-    fn cleanup(&self) -> anyhow::Result<()> {
-        let destination = PATHS.ts_parsers.join(".update-tmp");
-        if destination.exists() {
-            ufs::remove_all(&destination)?;
-        }
         Ok(())
     }
 }

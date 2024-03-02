@@ -1,9 +1,6 @@
-use clap::{
-    builder::{styling::AnsiColor, Styles},
-    Parser,
-};
+use clap::builder::{styling::AnsiColor, Styles};
 
-use crate::subcommands::{Compile, Install, Lock, Subcommand, Uninstall, Unlock, Update};
+use crate::subcommands::{Backups, Compile, Install, Lock, Subcommand, Uninstall, Unlock, Update};
 
 const STYLES: Styles = Styles::styled()
     .header(AnsiColor::Yellow.on_default())
@@ -12,12 +9,12 @@ const STYLES: Styles = Styles::styled()
     .valid(AnsiColor::Green.on_default())
     .placeholder(AnsiColor::Green.on_default());
 
-#[derive(Debug, Parser)]
+#[derive(Debug, clap::Parser)]
 #[clap(version, about, styles = STYLES)]
 pub enum Cli {
     /// Create/restore backups of installed tree-sitter parsers
     #[clap(name = "backups")]
-    Backups,
+    Backups(Backups),
 
     /// Display changelog for nvim-treesitter-parsers
     #[clap(name = "changelog")]
@@ -69,7 +66,11 @@ impl Cli {
             Self::Uninstall(cmd) => cmd.run().await?,
             Self::Lock(cmd) => cmd.run().await?,
             Self::Unlock(cmd) => cmd.run().await?,
-            _ => anyhow::bail!("Subcommand '{:?}' not implemented yet!", self),
+            Self::Backups(cmd) => cmd.run().await?,
+            Self::Changelog => todo!(),
+            Self::Clean => todo!(),
+            Self::SelfUpdate => todo!(),
+            Self::Parsers => todo!(),
         }
         Ok(())
     }

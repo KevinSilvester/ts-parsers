@@ -74,8 +74,4 @@ impl Subcommand for Unlock {
 
         Ok(())
     }
-
-    fn cleanup(&self) -> anyhow::Result<()> {
-        Ok(())
-    }
 }

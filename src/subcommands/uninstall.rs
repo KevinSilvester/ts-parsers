@@ -94,8 +94,4 @@ impl Subcommand for Uninstall {
 
         Ok(())
     }
-
-    fn cleanup(&self) -> anyhow::Result<()> {
-        Ok(())
-    }
 }
