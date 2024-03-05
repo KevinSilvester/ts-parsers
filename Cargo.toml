@@ -1,6 +1,6 @@
 [workspace]
-members = ["ts-parsers", "range-to-vec"]
-default-members = ["ts-parsers"]
+members = ["crates/ts-parsers", "crates/range-to-vec"]
+default-members = ["crates/ts-parsers"]
 resolver = "2"
 
 [workspace.package]
@@ -11,7 +11,7 @@ homepage = "https://github.com/KevinSilveter/ts-parsers"
 license = "MIT"
 
 [workspace.dependencies]
-range-to-vec = { path = "range-to-vec" }
+range-to-vec = { path = "crates/range-to-vec" }
 
 [profile.release]
 strip = true
