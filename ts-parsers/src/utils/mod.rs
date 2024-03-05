@@ -9,6 +9,7 @@ pub mod http;
 pub use self::paths::PATHS;
 
 #[macro_export]
+/// A macro to print colored text to the terminal.
 macro_rules! c_println {
     (red, $($arg:tt)*) => {{
         eprintln!("{}", ::ansi_term::Colour::RGB(235, 66, 66).paint(&format!($($arg)*)))

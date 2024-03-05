@@ -1224,6 +1224,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "range-to-vec"
+version = "0.0.0"
+
+[[package]]
 name = "redox_syscall"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1821,6 +1825,7 @@ dependencies = [
  "jsonschema",
  "lazy_static",
  "predicates",
+ "range-to-vec",
  "reqwest",
  "rusty-hook",
  "serde",

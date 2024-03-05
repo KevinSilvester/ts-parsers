@@ -52,9 +52,9 @@ impl Subcommand for Backups {
             Commands::Create => {
                 c_println!(blue, "Creating backup...");
                 backups_ops::create_backup(&mut state, "manual")?;
+                state.commit()?;
                 c_println!(green, "Backup created!");
 
-                state.commit()?;
                 Ok(())
             }
             Commands::List => {
@@ -92,19 +92,27 @@ impl Subcommand for Backups {
 
                 c_println!(blue, "Restoring backup...");
                 backups_ops::restore_backup(&mut state, id as usize)?;
+                state.commit()?;
                 c_println!(green, "Backup restored!");
 
-                state.commit()?;
                 Ok(())
             }
             Commands::Delete { ids, all } => {
                 if *all {
                     c_println!(blue, "Deleting all backups...");
                     backups_ops::delete_backup(&mut state, vec![], true)?;
+                    state.commit()?;
                     c_println!(green, "All backups deleted!");
+                    return Ok(());
                 }
 
-                state.commit()?;
+                match ids {
+                    Some(_query) => {}
+                    None => {
+                        anyhow::bail!("You must provide an ID or range of IDs to delete");
+                    }
+                }
+
                 Ok(())
             }
         }
