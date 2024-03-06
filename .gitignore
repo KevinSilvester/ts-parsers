@@ -1,1 +1,3 @@
 target
+tests/outputs/*
+!tests/outputs/.gitkeep
