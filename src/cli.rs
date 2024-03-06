@@ -1,16 +1,22 @@
-use clap::builder::{styling::AnsiColor, Styles};
+use clap::builder::{
+    styling::{AnsiColor, Effects},
+    Styles,
+};
 
 use crate::subcommands::{Backups, Compile, Install, Lock, Subcommand, Uninstall, Unlock, Update};
 
-const STYLES: Styles = Styles::styled()
-    .header(AnsiColor::Yellow.on_default())
-    .usage(AnsiColor::Yellow.on_default())
-    .literal(AnsiColor::Green.on_default())
-    .valid(AnsiColor::Green.on_default())
-    .placeholder(AnsiColor::Green.on_default());
+fn style() -> Styles {
+    Styles::default()
+        .header(AnsiColor::Yellow.on_default() | Effects::BOLD)
+        .usage(AnsiColor::Yellow.on_default() | Effects::BOLD)
+        .literal(AnsiColor::Green.on_default() | Effects::BOLD)
+        .valid(AnsiColor::Green.on_default() | Effects::BOLD)
+        .placeholder(AnsiColor::Green.on_default() | Effects::BOLD)
+        .error(AnsiColor::Red.on_default() | Effects::BOLD)
+}
 
 #[derive(Debug, clap::Parser)]
-#[clap(version, about, styles = STYLES)]
+#[clap(version, about, styles = style())]
 pub enum Cli {
     /// Create/restore backups of installed tree-sitter parsers
     #[clap(name = "backups")]

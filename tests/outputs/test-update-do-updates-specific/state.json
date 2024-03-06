@@ -1,0 +1,35 @@
+{
+  "last_updated": "2024-03-05T12:56:26.918356449Z",
+  "restore_points": [
+    {
+      "date": "2024-03-05T12:56:22.141510291Z",
+      "location": "tests/outputs/test-update-do-updates-specific/backups/backup-[2024-03-05_12-56-22]-[v212b7a5-update].tar.bz2"
+    }
+  ],
+  "parsers": {
+    "blueprint": {
+      "last_modified": "2024-03-05T12:56:22.061569604Z",
+      "revision": "863cea9f83ad5637300478e0559262f1e791684b",
+      "url": "https://gitlab.com/gabmus/tree-sitter-blueprint.git",
+      "tag": "v63ca90e",
+      "locked": false,
+      "install_method": "Compile"
+    },
+    "markdown": {
+      "last_modified": "2024-03-05T12:56:26.917189311Z",
+      "revision": "2821521a4e6eab37b63dff6a8e169cd88554047d",
+      "url": "https://github.com/MDeiml/tree-sitter-markdown",
+      "tag": "v212b7a5",
+      "locked": false,
+      "install_method": "Compile"
+    },
+    "rust": {
+      "last_modified": "2024-03-05T12:56:25.827526946Z",
+      "revision": "2d7bac5164c344c95530c16dd5c8fa1319e34308",
+      "url": "https://github.com/tree-sitter/tree-sitter-rust",
+      "tag": "v212b7a5",
+      "locked": false,
+      "install_method": "Compile"
+    }
+  }
+}
