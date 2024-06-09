@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use crate::{
     c_println,
-    compiler::{Compiler, Compilers, Zig, ZigTargets, CC},
+    compiler::{select_compiler, CompilerOption, ZigTargets},
     data::{changelog::ChangeLog, parsers::Parsers},
     ops::parser_ops,
 };
@@ -13,7 +13,7 @@ use super::Subcommand;
 pub struct Compile {
     /// Compiler to use
     #[clap(short, long, default_value_t, value_enum)]
-    compiler: Compilers,
+    compiler: CompilerOption,
 
     /// Zig compile target
     /// Only used when compiler is zig.
@@ -47,14 +47,6 @@ pub struct Compile {
 }
 
 impl Compile {
-    fn select_compiler(&self) -> Box<dyn Compiler> {
-        match self.compiler {
-            Compilers::Clang => Box::new(CC::new(CC::CLANG)),
-            Compilers::Gcc => Box::new(CC::new(CC::GCC)),
-            Compilers::Zig => Box::new(Zig::new()),
-        }
-    }
-
     fn select_langs(&self, parsers: &Parsers) -> anyhow::Result<Vec<String>> {
         if self.all {
             return Ok(parsers.langs.clone());
@@ -84,7 +76,7 @@ impl Compile {
 #[async_trait::async_trait]
 impl Subcommand for Compile {
     async fn run(&self) -> anyhow::Result<()> {
-        let compiler = &*self.select_compiler();
+        let compiler = &*select_compiler(&self.compiler);
         let mut parsers = Parsers::new()?;
         let mut changelog = ChangeLog::new();
 

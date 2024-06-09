@@ -1,6 +1,6 @@
 use crate::{
     c_println,
-    compiler::{Compiler, Compilers, Zig, CC},
+    compiler::{select_compiler, CompilerOption},
     data::{
         changelog::ChangeLog,
         parsers::Parsers,
@@ -20,7 +20,7 @@ pub struct Install {
 
     /// Compiler to use
     #[clap(short, long, default_value_t, value_enum)]
-    compiler: Compilers,
+    compiler: CompilerOption,
 
     /// Compile all parsers
     #[clap(short, long, default_value = "false")]
@@ -48,14 +48,6 @@ pub struct Install {
 }
 
 impl Install {
-    fn select_compiler(&self) -> Box<dyn Compiler> {
-        match self.compiler {
-            Compilers::Clang => Box::new(CC::new(CC::CLANG)),
-            Compilers::Gcc => Box::new(CC::new(CC::GCC)),
-            Compilers::Zig => Box::new(Zig::new()),
-        }
-    }
-
     fn select_tag(&self, changelog: &ChangeLog) -> String {
         match &self.tag {
             Some(tag) => tag.clone(),
@@ -99,7 +91,7 @@ impl Install {
 #[async_trait::async_trait]
 impl Subcommand for Install {
     async fn run(&self) -> anyhow::Result<()> {
-        let compiler: &dyn Compiler = &*self.select_compiler();
+        let compiler = &*select_compiler(&self.compiler);
         let mut state = State::new()?;
         let mut parsers = Parsers::new()?;
         let mut changelog = ChangeLog::new();

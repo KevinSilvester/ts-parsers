@@ -1,6 +1,6 @@
 use crate::{
     c_println,
-    compiler::{Compiler, Compilers, Zig, CC},
+    compiler::{select_compiler, CompilerOption},
     data::{
         changelog::ChangeLog,
         parsers::Parsers,
@@ -20,7 +20,7 @@ pub struct Update {
 
     /// Compiler to use
     #[clap(short, long, default_value_t, value_enum)]
-    compiler: Compilers,
+    compiler: CompilerOption,
 
     /// Update all installed parsers
     #[clap(short, long, default_value = "false")]
@@ -39,14 +39,6 @@ pub struct Update {
 }
 
 impl Update {
-    fn select_compiler(&self) -> Box<dyn Compiler> {
-        match self.compiler {
-            Compilers::Clang => Box::new(CC::new(CC::CLANG)),
-            Compilers::Gcc => Box::new(CC::new(CC::GCC)),
-            Compilers::Zig => Box::new(Zig::new()),
-        }
-    }
-
     fn select_langs(&self, parsers: &Parsers) -> anyhow::Result<Vec<String>> {
         if self.all {
             return Ok(parsers.langs.clone());
@@ -84,7 +76,7 @@ impl Update {
 #[async_trait::async_trait]
 impl Subcommand for Update {
     async fn run(&self) -> anyhow::Result<()> {
-        let compiler = &*self.select_compiler();
+        let compiler = &*select_compiler(&self.compiler);
         let mut state = State::new()?;
         let mut parsers = Parsers::new()?;
         let mut changelog = ChangeLog::new();

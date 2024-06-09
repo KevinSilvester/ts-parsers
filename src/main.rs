@@ -36,7 +36,7 @@ async fn main() -> anyhow::Result<()> {
         match cmd_c.lock().await.run().await {
             Ok(_) => shutdown_tx.send(Shutdown::Graceful).unwrap(),
             Err(err) => {
-                c_println!(red, "Error: {err}");
+                c_println!(red, "[ERROR]: {}", err);
                 shutdown_tx.send(Shutdown::Borked).unwrap()
             }
         }

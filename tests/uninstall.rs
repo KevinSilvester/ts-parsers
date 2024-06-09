@@ -74,7 +74,7 @@ fn test_uninstall_not_installed() {
     setup(&dir);
 
     let expected = [
-        r#"Error: Parsers are not installed: ["lua"]"#,
+        r#"[ERROR]: Parsers are not installed: ["lua"]"#,
         r#"I borked... (┬┬﹏┬┬)"#,
         "",
     ];

@@ -11,7 +11,7 @@ fn style() -> Styles {
         .usage(AnsiColor::Yellow.on_default() | Effects::BOLD)
         .literal(AnsiColor::Green.on_default() | Effects::BOLD)
         .valid(AnsiColor::Green.on_default() | Effects::BOLD)
-        .placeholder(AnsiColor::Green.on_default() | Effects::BOLD)
+        .placeholder(AnsiColor::Blue.on_default() | Effects::BOLD)
         .error(AnsiColor::Red.on_default() | Effects::BOLD)
 }
 
