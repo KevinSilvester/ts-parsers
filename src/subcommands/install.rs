@@ -45,6 +45,10 @@ pub struct Install {
     /// Force install, even if parsers are already installed
     #[clap(long, default_value = "false")]
     force: bool,
+
+    /// Use tree-sitter cli to generate parser from grammar
+    #[clap(short, long, default_value = "false")]
+    from_grammar: bool,
 }
 
 impl Install {
@@ -138,7 +142,7 @@ impl Subcommand for Install {
             }
         }
 
-        ufs::copy_all(&destination, PATHS.ts_parsers.join("parsers"))?;
+        ufs::copy_all(&destination, PATHS.ts_parsers.join("parser"))?;
 
         state.commit()?;
         Ok(())

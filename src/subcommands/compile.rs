@@ -25,6 +25,10 @@ pub struct Compile {
     #[clap(short, long, default_value = "false")]
     all: bool,
 
+    /// Compile all parsers
+    #[clap(short, long, default_value = "false")]
+    from_grammar: bool,
+
     /// Output directory to compile parsers to
     #[clap(short, long)]
     destination: PathBuf,

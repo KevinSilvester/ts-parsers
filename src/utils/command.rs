@@ -1,22 +1,16 @@
 use std::{collections::VecDeque, path::Path, println, process::Stdio};
 
-use ansi_term::Colour;
-use lazy_static::lazy_static;
 use strip_ansi_escapes::strip_str;
 use tokio::process::Command;
 use tokio_process_stream::{Item, ProcessLineStream};
 use tokio_stream::StreamExt;
 
-use crate::utils::renderer::Renderer;
+use crate::utils::{
+    colors::{BLUE, GREEN, RED, TURQUOISE},
+    renderer::Renderer,
+};
 
 const MAX_LINES: usize = 20;
-
-lazy_static! {
-    static ref TURQUOISE: Colour = Colour::RGB(66, 242, 245);
-    static ref BLUE: Colour = Colour::RGB(2, 149, 235);
-    static ref RED: Colour = Colour::RGB(235, 66, 66);
-    static ref GREEN: Colour = Colour::RGB(57, 219, 57);
-}
 
 pub fn check_exists(command: &str) -> anyhow::Result<()> {
     match std::process::Command::new(command)
@@ -46,11 +40,9 @@ pub async fn run(name: &str, args: &[&str], cwd: Option<impl AsRef<Path>>) -> an
     let mut failed = false;
 
     println!(
-        "{} {} {} {}",
-        TURQUOISE.paint("=>"),
+        "{TURQUOISE}=>{TURQUOISE:#} {} {} {BLUE}(running...){BLUE:#}",
         name,
-        args.join(" "),
-        BLUE.paint("(running...)")
+        args.join(" ")
     );
     let mut procstream = ProcessLineStream::try_from(command)?;
 
@@ -63,10 +55,10 @@ pub async fn run(name: &str, args: &[&str], cwd: Option<impl AsRef<Path>>) -> an
                     break;
                 }
                 Item::Stdout(out) => {
-                    out_queue.push_back(format!("   {} {}", BLUE.paint("=>"), strip_str(&out)));
+                    out_queue.push_back(format!("   {BLUE}=>{BLUE:#} {}", strip_str(&out)));
                 }
                 Item::Stderr(err) => {
-                    out_queue.push_back(format!("   {} {}", RED.paint("=>"), strip_str(&err)));
+                    out_queue.push_back(format!("   {RED}=>{RED:#} {}", strip_str(&err)));
                 }
             }
             renderer.render_queue(&out_queue)?;
@@ -85,10 +77,10 @@ pub async fn run(name: &str, args: &[&str], cwd: Option<impl AsRef<Path>>) -> an
                     break;
                 }
                 Item::Stdout(out) => {
-                    out_queue.push_back(format!("   {} {}", BLUE.paint("=>"), strip_str(&out)));
+                    out_queue.push_back(format!("   {BLUE}=>{BLUE:#} {}", strip_str(&out)));
                 }
                 Item::Stderr(err) => {
-                    out_queue.push_back(format!("   {} {}", RED.paint("=>"), strip_str(&err)));
+                    out_queue.push_back(format!("   {RED}=>{RED:#} {}", strip_str(&err)));
                 }
             }
             renderer.render_queue(&out_queue)?;
@@ -99,21 +91,17 @@ pub async fn run(name: &str, args: &[&str], cwd: Option<impl AsRef<Path>>) -> an
 
     if failed {
         eprintln!(
-            "{} {} {} {}",
-            RED.paint("=>"),
+            "{RED}=>{RED:#} {} {} {RED}(failed){RED:#}",
             name,
-            args.join(" "),
-            RED.paint("(failed!)")
+            args.join(" ")
         );
         return Ok(false);
     }
 
     println!(
-        "{} {} {} {}",
-        TURQUOISE.paint("=>"),
+        "{TURQUOISE}=>{TURQUOISE:#} {} {} {GREEN}(complete!){GREEN:#}",
         name,
-        args.join(" "),
-        GREEN.paint("(complete!)")
+        args.join(" ")
     );
 
     Ok(true)

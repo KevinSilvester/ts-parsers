@@ -10,7 +10,6 @@ license = "MIT"
 
 [dependencies]
 ahash = { version = "0.8.9", features = ["serde"] }
-ansi_term = "0.12.1"
 anstyle = "1.0.6"
 anyhow = "1.0.80"
 async-trait = "0.1.77"
