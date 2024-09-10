@@ -40,30 +40,30 @@ jobs:
         if: matrix.os == 'macos-latest'
         shell: bash
         run: |
-          wget 'https://ziglang.org/download/0.11.0/zig-macos-x86_64-0.11.0.tar.xz' -O /tmp/zig.tar.xz
+          wget 'https://ziglang.org/download/0.13.0/zig-macos-x86_64-0.13.0.tar.xz' -O /tmp/zig.tar.xz
           tar -xf /tmp/zig.tar.xz -C /tmp
           mkdir -p $HOME/zig
-          mv /tmp/zig-macos-x86_64-0.11.0/* $HOME/zig
+          mv /tmp/zig-macos-x86_64-0.13.0/* $HOME/zig
           echo "$HOME/zig" >> $GITHUB_PATH
 
       - name: Install Zig (linux)
         if: matrix.os == 'ubuntu-latest'
         shell: bash
         run: |
-          wget 'https://ziglang.org/download/0.11.0/zig-linux-x86_64-0.11.0.tar.xz' -O /tmp/zig.tar.xz
+          wget 'https://ziglang.org/download/0.13.0/zig-linux-x86_64-0.13.0.tar.xz' -O /tmp/zig.tar.xz
           tar -xf /tmp/zig.tar.xz -C /tmp
           mkdir -p $HOME/zig
-          mv /tmp/zig-linux-x86_64-0.11.0/* $HOME/zig
+          mv /tmp/zig-linux-x86_64-0.13.0/* $HOME/zig
           echo "$HOME/zig" >> $GITHUB_PATH
 
       - name: Install Zig (windows)
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          Invoke-WebRequest -Uri 'https://ziglang.org/download/0.11.0/zig-windows-x86_64-0.11.0.zip' -OutFile "$env:TEMP\zig.zip"
+          Invoke-WebRequest -Uri 'https://ziglang.org/download/0.13.0/zig-windows-x86_64-0.13.0.zip' -OutFile "$env:TEMP\zig.zip"
           7z x "$env:TEMP\zig.zip" -o"$env:TEMP"
           New-Item -Type Directory -Path $env:USERPROFILE\zig
-          Move-Item -Path "$env:TEMP\zig-windows-x86_64-0.11.0\*" -Destination "$env:USERPROFILE\zig"
+          Move-Item -Path "$env:TEMP\zig-windows-x86_64-0.13.0\*" -Destination "$env:USERPROFILE\zig"
           "$env:USERPROFILE\zig" >> $env:GITHUB_PATH
 
       - name: Install Rust
