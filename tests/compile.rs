@@ -14,7 +14,7 @@ fn test_compile_specific() {
     cmd.args([
         "compile",
         "--destination",
-        &dir.to_str().unwrap(),
+        dir.to_str().unwrap(),
         "rust",
         "blueprint",
         "markdown",
@@ -60,7 +60,7 @@ fn test_compile_with_gcc() {
         "--compiler",
         "gcc",
         "--destination",
-        &dir.to_str().unwrap(),
+        dir.to_str().unwrap(),
         "rust",
         "blueprint",
         "markdown",

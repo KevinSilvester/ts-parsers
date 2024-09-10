@@ -8,7 +8,7 @@ use crate::{
 
 pub fn create_backup(state: &mut State, tag: &str) -> anyhow::Result<()> {
     let timestamp = Utc::now();
-    let parsers_dir = PATHS.ts_parsers.join("parsers");
+    let parsers_dir = PATHS.ts_parsers.join("parser");
     let backup_dir = PATHS.ts_parsers.join("backups");
     let state_bak = PATHS.ts_parsers.join("state-parsers.json");
     let archive_path = backup_dir.join(format!(
@@ -44,12 +44,12 @@ pub fn restore_backup(state: &mut State, id: usize) -> anyhow::Result<()> {
     let tmp_dir = tempfile::tempdir()?;
 
     archives::extract_tar_bz2(&restore_point.location, tmp_dir.path())?;
-    ufs::remove_all(PATHS.ts_parsers.join("parsers"))?;
-    std::fs::create_dir_all(PATHS.ts_parsers.join("parsers"))?;
+    ufs::remove_all(PATHS.ts_parsers.join("parser"))?;
+    std::fs::create_dir_all(PATHS.ts_parsers.join("parser"))?;
 
     ufs::copy_all(
-        tmp_dir.path().join("parsers"),
-        PATHS.ts_parsers.join("parsers"),
+        tmp_dir.path().join("parser"),
+        PATHS.ts_parsers.join("parser"),
     )?;
 
     std::fs::remove_file(&restore_point.location)?;
@@ -99,7 +99,7 @@ mod tests {
     fn test_create_and_restore_backup() {
         let cwd = Path::new("tests").join("outputs").join("unit-tests");
         let backup_dir = cwd.join("backups");
-        let parsers_dir = cwd.join("parsers");
+        let parsers_dir = cwd.join("parser");
         let state_file = cwd.join("state.json");
 
         if state_file.exists() {
@@ -156,8 +156,8 @@ mod tests {
 
         // check if the state was restored
         assert_eq!(state.parsers.len(), 1);
-        assert!(state.parsers.get("test-parser-1").is_some());
-        assert!(state.parsers.get("test-parser-2").is_none());
+        assert!(state.parsers.contains_key("test-parser-1"));
+        assert!(!state.parsers.contains_key("test-parser-2"));
 
         // check if restore point was deleted
         assert!(state.check_restore_exists(0).is_err());

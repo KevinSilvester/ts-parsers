@@ -188,7 +188,7 @@ mod do_updates {
         validate_state(&dir);
         check_backups(&dir, 1, &latest_tag);
 
-        let parser_dir = dir.join("parsers");
+        let parser_dir = dir.join("parser");
         let files = parser_dir.read_dir().unwrap().collect::<Vec<_>>();
         assert_eq!(files.len(), 3);
     }

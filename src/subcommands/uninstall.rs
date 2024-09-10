@@ -86,7 +86,7 @@ impl Subcommand for Uninstall {
                 (idx + 1),
                 is_installed.len()
             );
-            parser_ops::uninstall(lang, &PATHS.ts_parsers.join("parsers"))?;
+            parser_ops::uninstall(lang, &PATHS.ts_parsers.join("parser"))?;
             state.remove_parser(lang);
         }
 

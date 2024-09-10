@@ -149,7 +149,7 @@ impl Subcommand for Update {
             }
         }
 
-        ufs::copy_all(&destination, PATHS.ts_parsers.join("parsers"))?;
+        ufs::copy_all(&destination, PATHS.ts_parsers.join("parser"))?;
         state.commit()?;
 
         Ok(())

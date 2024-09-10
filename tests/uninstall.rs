@@ -22,7 +22,7 @@ fn test_uninstall_specific() {
     cmd.assert().success();
     validate_state(&dir);
 
-    let parser_dir = dir.join("parsers");
+    let parser_dir = dir.join("parser");
     assert!(parser_dir.is_dir());
 
     check_backups(&dir, 1, "uninstall");
@@ -59,7 +59,7 @@ fn test_uninstall_wanted() {
     cmd.assert().success();
     validate_state(&dir);
 
-    let parser_dir = dir.join("parsers");
+    let parser_dir = dir.join("parser");
     assert!(parser_dir.is_dir());
 
     check_backups(&dir, 1, "uninstall");
@@ -169,7 +169,7 @@ fn test_uninstall_locked_parser() {
     validate_state(&dir);
     check_backups(&dir, 1, "uninstall");
 
-    let parser_dir = dir.join("parsers");
+    let parser_dir = dir.join("parser");
     let files = parser_dir.read_dir().unwrap().collect::<Vec<_>>();
     assert_eq!(files.len(), 0);
 }
