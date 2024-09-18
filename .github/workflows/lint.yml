@@ -73,14 +73,28 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v3
+        uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 9
 
-      - name: Install tree-sitter-cli
-        shell: bash
-        run: cargo install tree-sitter-cli
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: ${{ runner.os }}-pnpm
+
+      - name: Install cargo-nextest
+        uses: baptiste0928/cargo-install@v3
+        with:
+          crate: cargo-nextest
+          cache-key: ${{ runner.os }}-cargo-nextest
+
+      - name: Install cargo-nextest
+        uses: baptiste0928/cargo-install@v3
+        with:
+          crate: tree-sitter-cli
+          cache-key: ${{ runner.os }}-tree-sitter-cli
 
       - name: Run Tests
         shell: bash
-        run: cargo test --all
+        run: cargo nextest --no-fail-fast
