@@ -192,4 +192,43 @@ mod do_updates {
         let files = parser_dir.read_dir().unwrap().collect::<Vec<_>>();
         assert_eq!(files.len(), 3);
     }
+
+    #[test]
+    fn test_update_specific_from_grammar() {
+        let dir = OUTPUTS.join("test-update-do-updates-specific-from-grammar");
+        setup(&dir);
+
+        let old_tag = get_tag_by_index(1);
+        let latest_tag = get_tag_by_index(0);
+
+        dbg!(&old_tag, &latest_tag);
+
+        let mut cmd = Command::cargo_bin("ts-parsers").unwrap();
+        cmd.env("TS_PARSERS_DATA", &dir);
+        cmd.args([
+            "install",
+            "--tag",
+            &old_tag,
+            "rust",
+            "markdown",
+            "blueprint",
+        ]);
+        cmd.assert().success();
+        validate_state(&dir);
+
+        let mut cmd = Command::cargo_bin("ts-parsers").unwrap();
+        cmd.env("TS_PARSERS_DATA", &dir);
+        cmd.args([
+            "update",
+            "--from-grammar",
+            "--npm",
+            "pnpm",
+            "rust",
+            "markdown",
+        ]);
+        cmd.assert().success();
+        validate_state(&dir);
+
+        check_backups(&dir, 1, &latest_tag);
+    }
 }

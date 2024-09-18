@@ -4,7 +4,7 @@ use crate::{
     c_println,
     compiler::{select_compiler, CompilerOption, ZigTargets},
     data::{changelog::ChangeLog, parsers::Parsers},
-    ops::parser_ops,
+    ops::parser_ops::{self, NodePackageManagers},
 };
 
 use super::Subcommand;
@@ -25,9 +25,14 @@ pub struct Compile {
     #[clap(short, long, default_value = "false")]
     all: bool,
 
-    /// Compile all parsers
+    /// Generate the parser from grammar
     #[clap(short, long, default_value = "false")]
     from_grammar: bool,
+
+    /// Node package manager to use when compiling from grammar
+    /// Bun is only available on unix systems
+    #[clap(short, long, default_value_t, value_enum, verbatim_doc_comment)]
+    npm: NodePackageManagers,
 
     /// Output directory to compile parsers to
     #[clap(short, long)]
@@ -89,7 +94,7 @@ impl Subcommand for Compile {
         parsers.fetch_list(&self.tag).await?;
 
         let langs = &self.select_langs(&parsers)?;
-        parser_ops::check_compile_deps(compiler)?;
+        parser_ops::check_compile_deps(compiler, &self.npm)?;
 
         for (idx, lang) in langs.iter().enumerate() {
             c_println!(
@@ -99,7 +104,16 @@ impl Subcommand for Compile {
                 langs.len()
             );
             let parser = parsers.get_parser(lang).unwrap();
-            parser_ops::compile(lang, parser, compiler, &self.target, &self.destination).await?;
+            parser_ops::compile(
+                lang,
+                parser,
+                compiler,
+                &self.target,
+                &self.npm,
+                self.from_grammar,
+                &self.destination,
+            )
+            .await?;
         }
         Ok(())
     }

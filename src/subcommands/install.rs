@@ -6,7 +6,10 @@ use crate::{
         parsers::Parsers,
         state::{ParserInstallMethod, State},
     },
-    ops::{backups_ops, parser_ops},
+    ops::{
+        backups_ops,
+        parser_ops::{self, NodePackageManagers},
+    },
     utils::{fs as ufs, PATHS},
 };
 
@@ -46,8 +49,13 @@ pub struct Install {
     #[clap(long, default_value = "false")]
     force: bool,
 
-    /// Use tree-sitter cli to generate parser from grammar
-    #[clap(short, long, default_value = "false")]
+    /// Node package manager to use when compiling from grammar
+    /// Bun is only available on unix systems
+    #[clap(short, long, default_value_t, value_enum, verbatim_doc_comment)]
+    npm: NodePackageManagers,
+
+    /// Generate the parser from grammar
+    #[clap(short = 'g', long, default_value = "false")]
     from_grammar: bool,
 }
 
@@ -127,12 +135,21 @@ impl Subcommand for Install {
 
         match self.method {
             ParserInstallMethod::Compile => {
-                parser_ops::check_compile_deps(compiler)?;
+                parser_ops::check_compile_deps(compiler, &self.npm)?;
 
                 for (idx, lang) in langs.iter().enumerate() {
                     c_println!(blue, "\n{}/{}. {msg} {lang}", (idx + 1), langs.len());
                     let parser = parsers.get_parser(lang).unwrap();
-                    parser_ops::compile(lang, parser, compiler, &None, &destination).await?;
+                    parser_ops::compile(
+                        lang,
+                        parser,
+                        compiler,
+                        &None,
+                        &self.npm,
+                        self.from_grammar,
+                        &destination,
+                    )
+                    .await?;
                     state.add_parser(lang, &tag, ParserInstallMethod::Compile, parser);
                 }
             }

@@ -70,3 +70,24 @@ fn test_install_force() {
     validate_state(&dir);
     check_backups(&dir, 1, &tag);
 }
+
+#[test]
+fn test_install_specific_from_grammar() {
+    let dir = OUTPUTS.join("test-install-specific-from-grammar");
+    setup(&dir);
+
+    let mut cmd = Command::cargo_bin("ts-parsers").unwrap();
+    cmd.env("TS_PARSERS_DATA", &dir);
+    cmd.args([
+        "install",
+        "--from-grammar",
+        "--npm",
+        "pnpm",
+        "rust",
+        "blueprint",
+        "markdown",
+    ]);
+    cmd.assert().success();
+
+    validate_state(&dir);
+}

@@ -7,15 +7,43 @@ use crate::{
     utils::{archives, command, http},
 };
 
-#[cfg(unix)]
-const PNPM: &str = "pnpm";
+#[derive(Debug, Default, Clone, clap::ValueEnum)]
+pub enum NodePackageManagers {
+    #[default]
+    Npm,
+    Pnpm,
+    Yarn,
+    #[cfg(unix)]
+    Bun,
+}
 
-#[cfg(windows)]
-const PNPM: &str = "pnpm.cmd";
+impl NodePackageManagers {
+    #[cfg(unix)]
+    fn get_name(&self) -> &str {
+        match self {
+            NodePackageManagers::Npm => "npm",
+            NodePackageManagers::Pnpm => "pnpm",
+            NodePackageManagers::Yarn => "yarn",
+            NodePackageManagers::Bun => "bun",
+        }
+    }
 
-pub fn check_compile_deps(compiler: &dyn Compiler) -> anyhow::Result<()> {
+    #[cfg(windows)]
+    fn get_name(&self) -> &str {
+        match self {
+            NodePackageManagers::Npm => "npm.cmd",
+            NodePackageManagers::Pnpm => "pnpm.cmd",
+            NodePackageManagers::Yarn => "yarn.cmd",
+        }
+    }
+}
+
+pub fn check_compile_deps(
+    compiler: &dyn Compiler,
+    npm: &NodePackageManagers,
+) -> anyhow::Result<()> {
     command::check_exists(compiler.get_name())?;
-    command::check_exists(PNPM)?;
+    command::check_exists(npm.get_name())?;
     command::check_exists("tree-sitter")?;
     Ok(())
 }
@@ -37,6 +65,8 @@ pub async fn compile(
     parser_info: &ParserInfo,
     compiler: &dyn Compiler,
     target: &Option<ZigTargets>,
+    npm: &NodePackageManagers,
+    from_grammar: bool,
     destination: &Path,
 ) -> anyhow::Result<()> {
     let tmp_dir = tempfile::tempdir()?;
@@ -57,8 +87,8 @@ pub async fn compile(
         cwd = cwd.join(location);
     }
 
-    if parser_info.generate_from_grammar {
-        if let Err(e) = generate_from_grammar(&cwd).await {
+    if from_grammar || parser_info.generate_from_grammar {
+        if let Err(e) = generate_from_grammar(npm, &cwd).await {
             c_println!(amber, "=> WARNGING: tree-sitter generate failed: {}", e);
         }
     }
@@ -89,8 +119,8 @@ fn download_url(parser_info: &ParserInfo) -> String {
     }
 }
 
-async fn generate_from_grammar(cwd: &Path) -> anyhow::Result<()> {
-    command::run(PNPM, &["install"], Some(&cwd)).await?;
+async fn generate_from_grammar(npm: &NodePackageManagers, cwd: &Path) -> anyhow::Result<()> {
+    command::run(npm.get_name(), &["install"], Some(&cwd)).await?;
     command::run("tree-sitter", &["generate"], Some(&cwd)).await?;
     Ok(())
 }

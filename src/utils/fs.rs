@@ -6,7 +6,7 @@ pub fn copy_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> anyhow::Result<
         let entry = entry?;
         let ty = entry.file_type()?;
         if ty.is_dir() {
-            copy_all(&entry.path(), dst.as_ref().join(entry.file_name()))?;
+            copy_all(entry.path(), dst.as_ref().join(entry.file_name()))?;
         } else {
             fs::copy(entry.path(), dst.as_ref().join(entry.file_name()))?;
         }

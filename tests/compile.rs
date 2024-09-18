@@ -103,3 +103,27 @@ fn test_compile_with_zig() {
         assert!(destination.join("lua.so").exists());
     }
 }
+
+#[test]
+fn test_from_grammar_compile() {
+    let dir = OUTPUTS.join("test-from-grammar-and-compile");
+    setup(&dir);
+
+    let mut cmd = Command::cargo_bin("ts-parsers").unwrap();
+    cmd.args([
+        "compile",
+        "--destination",
+        dir.to_str().unwrap(),
+        "--from-grammar",
+        "--npm",
+        "pnpm",
+        "rust",
+        "blueprint",
+        "markdown",
+    ]);
+    cmd.assert().success();
+
+    for lang in ["rust", "blueprint", "markdown"] {
+        assert!(dir.join(format!("{lang}.so")).exists());
+    }
+}

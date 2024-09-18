@@ -6,7 +6,10 @@ use crate::{
         parsers::Parsers,
         state::{ParserInstallMethod, State},
     },
-    ops::{backups_ops, parser_ops},
+    ops::{
+        backups_ops,
+        parser_ops::{self, NodePackageManagers},
+    },
     utils::{fs as ufs, PATHS},
 };
 
@@ -36,6 +39,15 @@ pub struct Update {
     /// Update specific (cannot be used with --all or --wanted)
     #[clap(conflicts_with = "all")]
     parsers: Vec<String>,
+
+    /// Node package manager to use when compiling from grammar
+    /// Bun is only available on unix systems
+    #[clap(short, long, default_value_t, value_enum, verbatim_doc_comment)]
+    npm: NodePackageManagers,
+
+    /// Generate the parser from grammar
+    #[clap(short, long, default_value = "false")]
+    from_grammar: bool,
 }
 
 impl Update {
@@ -129,7 +141,7 @@ impl Subcommand for Update {
 
         match self.method {
             ParserInstallMethod::Compile => {
-                parser_ops::check_compile_deps(compiler)?;
+                parser_ops::check_compile_deps(compiler, &self.npm)?;
 
                 for (idx, lang) in to_update.iter().enumerate() {
                     c_println!(
@@ -139,7 +151,16 @@ impl Subcommand for Update {
                         to_update.len()
                     );
                     let parser = parsers.get_parser(lang).unwrap();
-                    parser_ops::compile(lang, parser, compiler, &None, &destination).await?;
+                    parser_ops::compile(
+                        lang,
+                        parser,
+                        compiler,
+                        &None,
+                        &self.npm,
+                        self.from_grammar,
+                        &destination,
+                    )
+                    .await?;
                     state.update_parser(lang, &tag, ParserInstallMethod::Compile, parser);
                 }
             }

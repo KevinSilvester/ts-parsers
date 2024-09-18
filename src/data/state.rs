@@ -226,7 +226,7 @@ mod tests {
         let parser_info = dummy_parser_info();
         state.add_parser("Test", "test", ParserInstallMethod::Compile, &parser_info);
 
-        assert!(state.parsers.get("Test").is_some());
+        assert!(state.parsers.contains_key("Test"));
     }
 
     #[test]
