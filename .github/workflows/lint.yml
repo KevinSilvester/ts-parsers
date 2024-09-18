@@ -81,7 +81,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: ${{ runner.os }}-pnpm
+          cache: pnpm
 
       - name: Install cargo-nextest
         uses: baptiste0928/cargo-install@v3
