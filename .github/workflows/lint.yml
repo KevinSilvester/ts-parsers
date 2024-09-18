@@ -88,7 +88,7 @@ jobs:
           crate: cargo-nextest
           cache-key: ${{ runner.os }}-cargo-nextest
 
-      - name: Install cargo-nextest
+      - name: Install tree-sitter-cli
         uses: baptiste0928/cargo-install@v3
         with:
           crate: tree-sitter-cli
