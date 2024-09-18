@@ -78,7 +78,7 @@ mod tests {
 
     use super::*;
 
-    const TAG: &str = "v7e9139d";
+    const TAG: &str = "v2024-09-18-3c6af36";
 
     #[tokio::test]
     async fn test_fetch_list() {
