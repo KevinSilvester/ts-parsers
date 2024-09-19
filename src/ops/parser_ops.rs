@@ -10,8 +10,8 @@ use crate::{
 #[derive(Debug, Default, Clone, clap::ValueEnum)]
 pub enum NodePackageManagers {
     #[default]
-    Npm,
     Pnpm,
+    Npm,
     Yarn,
     #[cfg(unix)]
     Bun,
