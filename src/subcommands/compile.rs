@@ -53,6 +53,10 @@ pub struct Compile {
     /// Parsers to compile (cannot be used with --all or --wanted)
     #[clap(conflicts_with = "all")]
     parsers: Vec<String>,
+
+    /// Continue compiling even if a parser fails to compile
+    #[clap(long, default_value = "false")]
+    no_fail_fast: bool,
 }
 
 impl Compile {
@@ -96,6 +100,8 @@ impl Subcommand for Compile {
         let langs = &self.select_langs(&parsers)?;
         parser_ops::check_compile_deps(compiler, &self.npm)?;
 
+        let mut failed_langs = vec![];
+
         for (idx, lang) in langs.iter().enumerate() {
             c_println!(
                 blue,
@@ -104,7 +110,7 @@ impl Subcommand for Compile {
                 langs.len()
             );
             let parser = parsers.get_parser(lang).unwrap();
-            parser_ops::compile(
+            match parser_ops::compile(
                 lang,
                 parser,
                 compiler,
@@ -113,8 +119,24 @@ impl Subcommand for Compile {
                 self.from_grammar,
                 &self.destination,
             )
-            .await?;
+            .await
+            {
+                Ok(_) => (),
+                Err(e) => {
+                    if self.no_fail_fast {
+                        c_println!(red, "Failed to compile parser {lang}: {e}");
+                        failed_langs.push(lang);
+                    } else {
+                        return Err(e);
+                    }
+                }
+            };
         }
+
+        if !failed_langs.is_empty() {
+            c_println!(red, "Failed to compile parsers:\n{failed_langs:?}");
+        }
+
         Ok(())
     }
 }
