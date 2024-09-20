@@ -7,7 +7,7 @@ use crate::{
     ops::parser_ops::{self, NodePackageManagers},
 };
 
-use super::Subcommand;
+use super::{Langs, Subcommand};
 
 #[derive(Debug, clap::Args)]
 pub struct Compile {
@@ -59,32 +59,7 @@ pub struct Compile {
     no_fail_fast: bool,
 }
 
-impl Compile {
-    fn select_langs(&self, parsers: &Parsers) -> anyhow::Result<Vec<String>> {
-        if self.all {
-            return Ok(parsers.langs.clone());
-        }
-
-        let langs = match self.wanted {
-            true => {
-                if parsers.wanted.is_none() {
-                    c_println!(red, "No wanted parsers found");
-                    return Err(anyhow::anyhow!("No wanted parsers found"));
-                }
-                parsers.wanted.clone().unwrap()
-            }
-            false => self.parsers.clone(),
-        };
-
-        parsers.validate_parsers(&langs)?;
-
-        if langs.is_empty() {
-            return Err(anyhow::anyhow!("No parsers found"));
-        }
-
-        Ok(langs)
-    }
-}
+impl Langs for Compile {}
 
 #[async_trait::async_trait]
 impl Subcommand for Compile {
@@ -97,7 +72,7 @@ impl Subcommand for Compile {
         changelog.check_entry(&self.tag)?;
         parsers.fetch_list(&self.tag).await?;
 
-        let langs = &self.select_langs(&parsers)?;
+        let langs = &self.select_langs(self.all, self.wanted, &self.parsers, &parsers)?;
         parser_ops::check_compile_deps(compiler, &self.npm)?;
 
         let mut failed_langs = vec![];
@@ -122,19 +97,19 @@ impl Subcommand for Compile {
             .await
             {
                 Ok(_) => (),
-                Err(e) => {
-                    if self.no_fail_fast {
-                        c_println!(red, "Failed to compile parser {lang}: {e}");
-                        failed_langs.push(lang);
-                    } else {
-                        return Err(e);
-                    }
+                Err(e) if self.no_fail_fast => {
+                    c_println!(amber, "[WARNING]: \"{lang}\" - {e}");
+                    failed_langs.push(lang);
                 }
+                Err(e) => return Err(e),
             };
         }
 
         if !failed_langs.is_empty() {
-            c_println!(red, "Failed to compile parsers:\n{failed_langs:?}");
+            c_println!(
+                amber,
+                "\n[WARNING]: Failed to compile parsers - {failed_langs:?}"
+            );
         }
 
         Ok(())

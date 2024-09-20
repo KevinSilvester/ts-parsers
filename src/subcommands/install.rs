@@ -13,7 +13,7 @@ use crate::{
     utils::{fs as ufs, PATHS},
 };
 
-use super::Subcommand;
+use super::{Langs, Subcommand};
 
 #[derive(Debug, clap::Args)]
 pub struct Install {
@@ -67,30 +67,6 @@ impl Install {
         }
     }
 
-    fn select_langs(&self, parsers: &Parsers) -> anyhow::Result<Vec<String>> {
-        if self.all {
-            return Ok(parsers.langs.clone());
-        }
-
-        let langs = match self.wanted {
-            true => {
-                if parsers.wanted.is_none() {
-                    return Err(anyhow::anyhow!("No wanted parsers found"));
-                }
-                parsers.wanted.clone().unwrap()
-            }
-            false => self.parsers.clone(),
-        };
-
-        parsers.validate_parsers(&langs)?;
-
-        if langs.is_empty() {
-            return Err(anyhow::anyhow!("No parsers found"));
-        }
-
-        Ok(langs)
-    }
-
     fn cleanup(&self) -> anyhow::Result<()> {
         let destination = PATHS.ts_parsers.join(".install-tmp");
         if destination.exists() {
@@ -99,6 +75,8 @@ impl Install {
         Ok(())
     }
 }
+
+impl Langs for Install {}
 
 #[async_trait::async_trait]
 impl Subcommand for Install {
@@ -115,9 +93,9 @@ impl Subcommand for Install {
         let destination = PATHS.ts_parsers.join(".install-tmp");
         self.cleanup()?;
 
-        let langs = self.select_langs(&parsers)?;
+        let langs = &self.select_langs(self.all, self.wanted, &self.parsers, &parsers)?;
         let tag = self.select_tag(&changelog);
-        let (is_installed, _) = state.check_all_installed(&langs);
+        let (is_installed, _) = state.check_all_installed(langs);
 
         if !self.force && !is_installed.is_empty() {
             c_println!(amber, "Parsers are already installed: {:?}", is_installed);
