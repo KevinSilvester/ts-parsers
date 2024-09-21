@@ -46,13 +46,15 @@ pub async fn run(name: &str, args: &[&str], cwd: Option<impl AsRef<Path>>) -> an
     let mut is_finished = false;
     let mut failed = false;
 
+    let quiet = std::env::var("TS_PARSERS_QUIET").is_ok() || !stdin.is_terminal();
+
     println!(
         "{TURQUOISE}=>{TURQUOISE:#} {} {} {BLUE}(running...){BLUE:#}",
         name,
         args.join(" ")
     );
 
-    if stdin.is_terminal() {
+    if !quiet {
         let mut procstream = ProcessLineStream::try_from(command)?;
 
         for _ in 0..MAX_LINES {
