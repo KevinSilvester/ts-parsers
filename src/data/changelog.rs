@@ -44,6 +44,10 @@ impl ChangeLog {
         self.get_latest().map(|entry| entry.tag.clone())
     }
 
+    pub fn get_previous_tag(&self) -> Option<String> {
+        self.entries.get(1).map(|entry| entry.tag.clone())
+    }
+
     pub fn check_entry(&self, tag: &Option<String>) -> anyhow::Result<()> {
         let tag = match tag {
             Some(tag) => tag,

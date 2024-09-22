@@ -6,6 +6,17 @@ mod uninstall;
 mod unlock;
 mod update;
 
+use crate::c_println;
+use crate::data::parsers::Parsers;
+
+pub use self::backups::Backups;
+pub use self::compile::Compile;
+pub use self::install::Install;
+pub use self::lock::Lock;
+pub use self::uninstall::Uninstall;
+pub use self::unlock::Unlock;
+pub use self::update::Update;
+
 #[async_trait::async_trait]
 pub trait Subcommand {
     async fn run(&self) -> anyhow::Result<()>;
@@ -39,14 +50,3 @@ pub trait Langs {
         Ok(langs)
     }
 }
-
-use crate::c_println;
-use crate::data::parsers::Parsers;
-
-pub use self::backups::Backups;
-pub use self::compile::Compile;
-pub use self::install::Install;
-pub use self::lock::Lock;
-pub use self::uninstall::Uninstall;
-pub use self::unlock::Unlock;
-pub use self::update::Update;

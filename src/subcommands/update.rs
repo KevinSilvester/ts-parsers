@@ -1,6 +1,6 @@
 use crate::{
     c_println,
-    compiler::{select_compiler, CompilerOption},
+    compiler::{select_compiler, CompilerOption, ZigTargets},
     data::{
         changelog::ChangeLog,
         parsers::Parsers,
@@ -10,7 +10,10 @@ use crate::{
         backups_ops,
         parser_ops::{self, NodePackageManagers},
     },
-    utils::{fs as ufs, PATHS},
+    utils::{
+        colors::{BLUE, TURQUOISE},
+        fs as ufs, PATHS,
+    },
 };
 
 use super::{Langs, Subcommand};
@@ -24,6 +27,12 @@ pub struct Update {
     /// Compiler to use
     #[clap(short, long, default_value_t, value_enum)]
     compiler: CompilerOption,
+
+    /// Zig compile target
+    /// Only used when compiler is zig.
+    /// (defaults to host architecture)
+    #[clap(short, long, value_enum, verbatim_doc_comment)]
+    target: Option<ZigTargets>,
 
     /// Update all installed parsers
     #[clap(short, long, default_value = "false")]
@@ -62,17 +71,27 @@ impl Update {
 
 impl Langs for Update {}
 
+#[derive(Debug)]
+enum UpdateType {
+    TagOnly,
+    TagAndParser,
+}
+
 #[async_trait::async_trait]
 impl Subcommand for Update {
     async fn run(&self) -> anyhow::Result<()> {
         let compiler = &*select_compiler(&self.compiler);
         let mut state = State::new()?;
         let mut parsers = Parsers::new()?;
+        let mut parsers_previous = Parsers::new()?;
         let mut changelog = ChangeLog::new();
 
         changelog.fetch_changelog().await?;
         changelog.check_entry(&None)?;
         parsers.fetch_list(&None).await?;
+        parsers_previous
+            .fetch_list(&changelog.get_previous_tag())
+            .await?;
 
         let destination = PATHS.ts_parsers.join(".update-tmp");
         self.cleanup()?;
@@ -86,7 +105,7 @@ impl Subcommand for Update {
             return Ok(());
         }
 
-        if !not_installed.is_empty() {
+        if !self.all && !not_installed.is_empty() {
             c_println!(amber, "Parsers are not installed: {:?}", not_installed);
         }
 
@@ -96,11 +115,20 @@ impl Subcommand for Update {
             .collect::<Vec<_>>();
         let up_to_date = &is_installed
             .iter()
-            .filter(|lang| state.is_up_to_date(lang, &tag))
+            .filter(|lang| state.is_tag_up_to_date(lang, &tag))
             .collect::<Vec<_>>();
         let to_update = &is_installed
             .iter()
-            .filter(|lang| !state.is_up_to_date(lang, &tag) && !state.is_locked(lang))
+            .filter(|lang| !state.is_tag_up_to_date(lang, &tag) && !state.is_locked(lang))
+            .map(|lang| {
+                let update_type = match parsers_previous.get_parser(lang).unwrap().revision
+                    == parsers.get_parser(lang).unwrap().revision
+                {
+                    true => UpdateType::TagOnly,
+                    false => UpdateType::TagAndParser,
+                };
+                (lang, update_type)
+            })
             .collect::<Vec<_>>();
 
         if !is_locked.is_empty() {
@@ -120,7 +148,7 @@ impl Subcommand for Update {
             ParserInstallMethod::Compile => {
                 parser_ops::check_compile_deps(compiler, &self.npm)?;
 
-                for (idx, lang) in to_update.iter().enumerate() {
+                for (idx, (lang, update_type)) in to_update.iter().enumerate() {
                     c_println!(
                         blue,
                         "\n{}/{}. Updating parser {lang}",
@@ -128,17 +156,27 @@ impl Subcommand for Update {
                         to_update.len()
                     );
                     let parser = parsers.get_parser(lang).unwrap();
-                    parser_ops::compile(
-                        lang,
-                        parser,
-                        compiler,
-                        &None,
-                        &self.npm,
-                        self.from_grammar,
-                        &destination,
-                    )
-                    .await?;
-                    state.update_parser(lang, &tag, ParserInstallMethod::Compile, parser);
+
+                    match update_type {
+                        UpdateType::TagOnly => {
+                            let install_method = state.parsers.get(*lang).unwrap().install_method;
+                            println!("{TURQUOISE}->{TURQUOISE:#} updating parser data");
+                            state.update_parser(lang, &tag, install_method, parser);
+                        }
+                        UpdateType::TagAndParser => {
+                            parser_ops::compile(
+                                lang,
+                                parser,
+                                compiler,
+                                &self.target,
+                                &self.npm,
+                                self.from_grammar,
+                                &destination,
+                            )
+                            .await?;
+                            state.update_parser(lang, &tag, ParserInstallMethod::Compile, parser);
+                        }
+                    }
                 }
             }
             // TODO: Implement download method

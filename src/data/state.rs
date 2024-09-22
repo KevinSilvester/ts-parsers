@@ -3,6 +3,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use byte_unit::{Byte, UnitType};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
@@ -10,7 +11,7 @@ use crate::utils::PATHS;
 
 use super::parsers::ParserInfo;
 
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, clap::ValueEnum)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Serialize, Deserialize, clap::ValueEnum)]
 pub enum ParserInstallMethod {
     #[default]
     Compile,
@@ -40,7 +41,7 @@ impl Default for ParserState {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RestorePoint {
     pub date: DateTime<Utc>,
     pub location: PathBuf,
@@ -100,9 +101,14 @@ impl State {
         self.parsers.insert(name.to_owned(), parser_state);
     }
 
-    pub fn is_up_to_date(&self, name: &str, tag: &str) -> bool {
+    pub fn is_tag_up_to_date(&self, name: &str, tag: &str) -> bool {
         let parser = self.parsers.get(name).unwrap();
         parser.tag == tag
+    }
+
+    pub fn is_revision_up_to_date(&self, name: &str, revision: &str) -> bool {
+        let parser = self.parsers.get(name).unwrap();
+        parser.revision == revision
     }
 
     // pub fn get_parser(&self, name: &str) -> Option<&ParserState> {
@@ -182,7 +188,7 @@ impl State {
         self.restore_points.clear();
     }
 
-    pub fn list_restore_points(&self) -> Vec<(String, String)> {
+    pub fn list_restore_points(&self) -> anyhow::Result<Vec<(String, String, String)>> {
         let mut restore_points = vec![];
         for restore_point in self.restore_points.iter() {
             let date = restore_point.date.format("%F %H:%M:%S").to_string();
@@ -193,9 +199,11 @@ impl State {
                 .to_str()
                 .unwrap()
                 .to_string();
-            restore_points.push((date, file_name));
+            let file_size = Byte::from_u64(std::fs::metadata(&restore_point.location)?.len())
+                .get_appropriate_unit(UnitType::Binary);
+            restore_points.push((date, file_name, format!("{file_size:.3}")));
         }
-        restore_points
+        Ok(restore_points)
     }
 
     pub fn commit(&mut self) -> anyhow::Result<()> {

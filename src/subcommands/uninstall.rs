@@ -69,7 +69,7 @@ impl Subcommand for Uninstall {
         if !is_locked.is_empty() {
             c_println!(amber, "Parsers are locked: {:?}", is_locked);
         }
-        if !not_installed.is_empty() {
+        if !self.all && !not_installed.is_empty() {
             anyhow::bail!("Parsers are not installed: {:?}", not_installed);
         }
         if to_uninstall.is_empty() {
