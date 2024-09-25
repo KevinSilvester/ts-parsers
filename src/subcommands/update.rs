@@ -1,6 +1,6 @@
 use crate::{
     c_println,
-    compiler::{select_compiler, CompilerOption, ZigTargets},
+    compiler::{select_compiler, CompilerOption},
     data::{
         changelog::ChangeLog,
         parsers::Parsers,
@@ -10,10 +10,7 @@ use crate::{
         backups_ops,
         parser_ops::{self, NodePackageManagers},
     },
-    utils::{
-        colors::{BLUE, TURQUOISE},
-        fs as ufs, PATHS,
-    },
+    utils::{colors::TURQUOISE, fs as ufs, PATHS},
 };
 
 use super::{Langs, Subcommand};
@@ -27,12 +24,6 @@ pub struct Update {
     /// Compiler to use
     #[clap(short, long, default_value_t, value_enum)]
     compiler: CompilerOption,
-
-    /// Zig compile target
-    /// Only used when compiler is zig.
-    /// (defaults to host architecture)
-    #[clap(short, long, value_enum, verbatim_doc_comment)]
-    target: Option<ZigTargets>,
 
     /// Update all installed parsers
     #[clap(short, long, default_value = "false")]
@@ -143,6 +134,7 @@ impl Subcommand for Update {
         }
 
         backups_ops::create_backup(&mut state, &format!("{tag}-update"))?;
+        let mut parsers_compiled = false;
 
         match self.method {
             ParserInstallMethod::Compile => {
@@ -168,13 +160,14 @@ impl Subcommand for Update {
                                 lang,
                                 parser,
                                 compiler,
-                                &self.target,
+                                &None,
                                 &self.npm,
                                 self.from_grammar,
                                 &destination,
                             )
                             .await?;
                             state.update_parser(lang, &tag, ParserInstallMethod::Compile, parser);
+                            parsers_compiled = true;
                         }
                     }
                 }
@@ -185,7 +178,9 @@ impl Subcommand for Update {
             }
         }
 
-        ufs::copy_all(&destination, PATHS.ts_parsers.join("parser"))?;
+        if parsers_compiled {
+            ufs::copy_all(&destination, PATHS.ts_parsers.join("parser"))?;
+        }
         state.commit()?;
 
         Ok(())
