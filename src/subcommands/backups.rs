@@ -1,6 +1,6 @@
 use tabled::{builder::Builder as TableBuilder, settings::Style as TableStyle};
 
-use crate::{c_println, data::state::State, ops::backups_ops};
+use crate::{c_println, data::state::State, ops::backups_ops, utils::num_args};
 
 use super::Subcommand;
 
@@ -27,13 +27,13 @@ enum Commands {
     /// Delete backups
     Delete {
         /// IDs of the backups to delete.
-        /// Input can be a single ID, a comma-separated list of IDs or a range of IDs.
+        /// Input can be a single ID, a space-separated list of IDs or a range of IDs.
         ///
         /// eg.
         /// - '1' (delete backup with ID 1)
-        /// - '1,2,3' (delete backups with IDs 1, 2 and 3)
-        /// - '1..3' (delete backups with IDs 1, 2 and 3)
-        /// - '1, 2..4' (delete backups with IDs 1, 2, 3 and 4)
+        /// - '1 2 3' (delete backups with IDs 1, 2 and 3)
+        /// - '1..3' (delete backups with IDs 1 and 2)
+        /// - '1 2..=4' (delete backups with IDs 1, 2, 3 and 4)
         #[clap(conflicts_with = "all", verbatim_doc_comment)]
         ids: Option<String>,
 
@@ -58,17 +58,22 @@ impl Subcommand for Backups {
                 Ok(())
             }
             Commands::List => {
-                let backups = state.list_restore_points();
+                let backups = state.list_restore_points()?;
                 if backups.is_empty() {
                     c_println!(amber, "No backups found");
                     return Ok(());
                 }
 
                 let mut builder = TableBuilder::default();
-                builder.push_record(["ID", "Date", "File"]);
+                builder.push_record(["ID", "Date", "File", "FileSize"]);
 
-                for (i, (date, file)) in backups.iter().enumerate() {
-                    builder.push_record([(i + 1).to_string(), date.to_owned(), file.to_owned()]);
+                for (i, (date, file, size)) in backups.iter().enumerate() {
+                    builder.push_record([
+                        (i + 1).to_string(),
+                        date.to_owned(),
+                        file.to_owned(),
+                        size.to_owned(),
+                    ]);
                 }
 
                 let mut table = builder.build();
@@ -100,14 +105,25 @@ impl Subcommand for Backups {
             Commands::Delete { ids, all } => {
                 if *all {
                     c_println!(blue, "Deleting all backups...");
-                    backups_ops::delete_backup(&mut state, vec![], true)?;
+                    if state.restore_points.is_empty() {
+                        c_println!(amber, "No backups to delete");
+                        return Ok(());
+                    }
+
+                    for id in 0..state.restore_points.len() {
+                        backups_ops::delete_backup(&mut state, id)?;
+                    }
+
                     state.commit()?;
                     c_println!(green, "All backups deleted!");
                     return Ok(());
                 }
 
                 match ids {
-                    Some(_query) => {}
+                    Some(ids_str) => {
+                        let ids = num_args::parse_args(ids_str)?;
+                        dbg!(ids);
+                    }
                     None => {
                         anyhow::bail!("You must provide an ID or range of IDs to delete");
                     }

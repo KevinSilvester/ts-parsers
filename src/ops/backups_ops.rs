@@ -59,14 +59,10 @@ pub fn restore_backup(state: &mut State, id: usize) -> anyhow::Result<()> {
     Ok(())
 }
 
-pub fn delete_backup(state: &mut State, ids: Vec<usize>, all: bool) -> anyhow::Result<()> {
-    if all {
-        state.delete_all_restore_points();
-    } else {
-        for id in ids {
-            state.delete_restore_point(id);
-        }
-    }
+pub fn delete_backup(state: &mut State, id: usize) -> anyhow::Result<()> {
+    let restore_point = state.get_restore_point(id)?;
+    std::fs::remove_file(&restore_point.location)?;
+    state.delete_restore_point(id);
     Ok(())
 }
 

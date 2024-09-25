@@ -6,6 +6,7 @@ pub mod colors;
 pub mod command;
 pub mod fs;
 pub mod http;
+pub mod num_args;
 
 pub use self::paths::PATHS;
 
