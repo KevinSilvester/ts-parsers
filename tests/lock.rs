@@ -44,7 +44,7 @@ mod lock_specific {
 
         let expected = [
             r#"[ERROR]: Parsers are not installed: ["lua"]"#,
-            r#"I borked... (┬┬﹏┬┬)"#,
+            // r#"I borked... (┬┬﹏┬┬)"#,
             "",
         ];
 
@@ -134,7 +134,7 @@ mod lock_wanted {
 
         let expected = [
             r#"[ERROR]: Parsers are not installed: ["rust"]"#,
-            r#"I borked... (┬┬﹏┬┬)"#,
+            // r#"I borked... (┬┬﹏┬┬)"#,
             "",
         ];
 

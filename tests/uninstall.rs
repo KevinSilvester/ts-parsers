@@ -75,7 +75,7 @@ fn test_uninstall_not_installed() {
 
     let expected = [
         r#"[ERROR]: Parsers are not installed: ["lua"]"#,
-        r#"I borked... (┬┬﹏┬┬)"#,
+        // r#"I borked... (┬┬﹏┬┬)"#,
         "",
     ];
     let mut cmd = Command::cargo_bin("ts-parsers").unwrap();

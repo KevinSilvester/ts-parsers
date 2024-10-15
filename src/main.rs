@@ -60,7 +60,7 @@ async fn main() -> anyhow::Result<()> {
             std::process::exit(0);
         }
         false => {
-            c_println!(red, "I borked... (┬┬﹏┬┬)");
+            // c_println!(red, "I borked... (┬┬﹏┬┬)");
             std::mem::drop(cmd);
             std::process::exit(1);
         }

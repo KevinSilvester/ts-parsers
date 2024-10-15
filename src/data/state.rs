@@ -106,15 +106,6 @@ impl State {
         parser.tag == tag
     }
 
-    pub fn is_revision_up_to_date(&self, name: &str, revision: &str) -> bool {
-        let parser = self.parsers.get(name).unwrap();
-        parser.revision == revision
-    }
-
-    // pub fn get_parser(&self, name: &str) -> Option<&ParserState> {
-    //     self.parsers.get(name)
-    // }
-
     pub fn update_parser(
         &mut self,
         name: &str,
@@ -182,10 +173,6 @@ impl State {
 
     pub fn delete_restore_point(&mut self, id: usize) {
         self.restore_points.remove(id);
-    }
-
-    pub fn delete_all_restore_points(&mut self) {
-        self.restore_points.clear();
     }
 
     pub fn list_restore_points(&self) -> anyhow::Result<Vec<(String, String, String)>> {

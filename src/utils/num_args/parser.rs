@@ -21,7 +21,7 @@ impl<'a> Parser<'a> {
     pub fn parse(&mut self) -> Result<Vec<u32>, ParserError> {
         let mut nums = vec![];
 
-        while let Some(token) = self.tokens.next() {
+        for token in self.tokens.by_ref() {
             match token.kind {
                 TokenKind::Int(val) => {
                     nums.push(val);

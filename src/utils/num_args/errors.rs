@@ -21,7 +21,7 @@ trait FancyError {
         let after_err: String = input[span.1..].iter().collect();
         let err: String = input[(span.0 - 1)..span.1].iter().collect();
 
-        let error_msg = formatdoc! {"{WHITE}
+        let error_msg = formatdoc! {"Syntax error{WHITE}
             ╭╴{msg}
             │ 
             │ {before_err}{white_on_red}{err}{white_on_red:#}{after_err}

@@ -121,8 +121,7 @@ impl Subcommand for Backups {
 
                 match ids {
                     Some(ids_str) => {
-                        let ids = num_args::parse_args(ids_str)?;
-                        dbg!(ids);
+                        let _ids = num_args::parse_args(ids_str)?;
                     }
                     None => {
                         anyhow::bail!("You must provide an ID or range of IDs to delete");

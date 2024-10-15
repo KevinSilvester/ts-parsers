@@ -58,7 +58,7 @@ mod unlock_specific {
 
         let expected = [
             r#"[ERROR]: Parsers are not installed: ["lua"]"#,
-            r#"I borked... (┬┬﹏┬┬)"#,
+            // r#"I borked... (┬┬﹏┬┬)"#,
             "",
         ];
 
@@ -181,7 +181,7 @@ mod unlock_wanted {
 
         let expected = [
             r#"[ERROR]: Parsers are not installed: ["rust"]"#,
-            r#"I borked... (┬┬﹏┬┬)"#,
+            // r#"I borked... (┬┬﹏┬┬)"#,
             "",
         ];
 
