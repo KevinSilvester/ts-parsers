@@ -10,7 +10,7 @@ use crate::{
         backups_ops,
         parser_ops::{self, NodePackageManagers},
     },
-    utils::{colors::TURQUOISE, fs as ufs, PATHS},
+    utils::{/* colors::TURQUOISE, */ fs as ufs, PATHS},
 };
 
 use super::{Langs, Subcommand};
@@ -62,12 +62,6 @@ impl Update {
 
 impl Langs for Update {}
 
-#[derive(Debug)]
-enum UpdateType {
-    TagOnly,
-    TagAndParser,
-}
-
 #[async_trait::async_trait]
 impl Subcommand for Update {
     async fn run(&self) -> anyhow::Result<()> {
@@ -108,19 +102,22 @@ impl Subcommand for Update {
             .iter()
             .filter(|lang| state.is_tag_up_to_date(lang, &tag))
             .collect::<Vec<_>>();
-        let to_update = &is_installed
-            .iter()
-            .filter(|lang| !state.is_tag_up_to_date(lang, &tag) && !state.is_locked(lang))
-            .map(|lang| {
-                let update_type = match parsers_previous.get_parser(lang).unwrap().revision
-                    == parsers.get_parser(lang).unwrap().revision
-                {
-                    true => UpdateType::TagOnly,
-                    false => UpdateType::TagAndParser,
-                };
-                (lang, update_type)
-            })
-            .collect::<Vec<_>>();
+
+        let (mut update_tags, mut update_tags_and_parsers) = (vec![], vec![]);
+
+        for lang in &is_installed {
+            if state.is_locked(lang) || state.is_tag_up_to_date(lang, &tag) {
+                continue;
+            }
+
+            if parsers_previous.get_parser(lang).unwrap().revision
+                == parsers.get_parser(lang).unwrap().revision
+            {
+                update_tags.push(lang);
+            } else {
+                update_tags_and_parsers.push(lang);
+            }
+        }
 
         if !is_locked.is_empty() {
             c_println!(amber, "Parsers are locked: {:?}", is_locked);
@@ -128,7 +125,7 @@ impl Subcommand for Update {
         if !up_to_date.is_empty() {
             c_println!(blue, "Parsers are already up-to-date: {:?}", up_to_date);
         }
-        if to_update.is_empty() {
+        if update_tags_and_parsers.is_empty() {
             c_println!(blue, "No parsers to update!");
             return Ok(());
         }
@@ -136,40 +133,42 @@ impl Subcommand for Update {
         backups_ops::create_backup(&mut state, &format!("{tag}-update"))?;
         let mut parsers_compiled = false;
 
+        for lang in update_tags {
+            state.update_parser(
+                lang,
+                &tag,
+                state.parsers.get(lang).unwrap().install_method,
+                parsers.get_parser(lang).unwrap(),
+            );
+        }
+
         match self.method {
             ParserInstallMethod::Compile => {
+                if !update_tags_and_parsers.is_empty() {
+                    return Ok(());
+                }
                 parser_ops::check_compile_deps(compiler, &self.npm)?;
+                for (idx, lang) in update_tags_and_parsers.iter().enumerate() {
+                    let parser = parsers.get_parser(lang).unwrap();
 
-                for (idx, (lang, update_type)) in to_update.iter().enumerate() {
                     c_println!(
                         blue,
                         "\n{}/{}. Updating parser {lang}",
                         (idx + 1),
-                        to_update.len()
+                        update_tags_and_parsers.len()
                     );
-                    let parser = parsers.get_parser(lang).unwrap();
-
-                    match update_type {
-                        UpdateType::TagOnly => {
-                            let install_method = state.parsers.get(*lang).unwrap().install_method;
-                            println!("{TURQUOISE}->{TURQUOISE:#} updating parser data");
-                            state.update_parser(lang, &tag, install_method, parser);
-                        }
-                        UpdateType::TagAndParser => {
-                            parser_ops::compile(
-                                lang,
-                                parser,
-                                compiler,
-                                &None,
-                                &self.npm,
-                                self.from_grammar,
-                                &destination,
-                            )
-                            .await?;
-                            state.update_parser(lang, &tag, ParserInstallMethod::Compile, parser);
-                            parsers_compiled = true;
-                        }
-                    }
+                    parser_ops::compile(
+                        lang,
+                        parser,
+                        compiler,
+                        &None,
+                        &self.npm,
+                        self.from_grammar,
+                        &destination,
+                    )
+                    .await?;
+                    state.update_parser(lang, &tag, ParserInstallMethod::Compile, parser);
+                    parsers_compiled = true;
                 }
             }
             // TODO: Implement download method

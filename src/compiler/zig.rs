@@ -27,8 +27,15 @@ pub struct Zig<'a> {
     command: &'a str,
     base_args: &'a [&'a str],
 }
-
+// -Wall -Wextra -fPIC -Werror=implicit-function-declaration
 impl<'a> Zig<'a> {
+    // const UNIX_ARGS: &'a [&'a str] = &[
+    //     "-Wall",
+    //     "-Wextra",
+    //     "-fPIC",
+    //     "-Werror=implicit-function-declaration",
+    // ];
+
     pub fn new() -> Self {
         Self {
             command: "zig",
@@ -46,25 +53,34 @@ impl<'a> Zig<'a> {
             Some(ZigTargets::X86_64Linux) => {
                 args.push("-target");
                 args.push("x86_64-linux");
+                // args.extend(Self::UNIX_ARGS);
             }
             Some(ZigTargets::Aarch64Linux) => {
                 args.push("-target");
                 args.push("aarch64-linux");
+                // args.extend(Self::UNIX_ARGS);
             }
             Some(ZigTargets::X86_64MacOS) => {
                 args.push("-target");
                 args.push("x86_64-macos");
+                // args.extend(Self::UNIX_ARGS);
             }
             Some(ZigTargets::Aarch64MacOS) => {
                 args.push("-target");
                 args.push("aarch64-macos");
+                // args.extend(Self::UNIX_ARGS);
             }
             Some(ZigTargets::X86_64Windows) => {
                 args.push("-target");
                 args.push("x86_64-windows");
             }
-            None => {}
+            None => {
+                unreachable!();
+                // #[cfg(unix)]
+                // args.extend(Self::UNIX_ARGS);
+            }
         }
+
         args
     }
 }
