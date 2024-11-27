@@ -1,6 +1,6 @@
 [package]
 name = "ts-parsers"
-version = "0.1.1-r3"
+version = "0.1.1-r4"
 description = "A tool to manage tree-sitter parsers used by nvim-treesitter"
 edition = "2021"
 authors = ["Kevin Silveter"]

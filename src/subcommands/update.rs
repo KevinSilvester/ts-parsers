@@ -68,15 +68,11 @@ impl Subcommand for Update {
         let compiler = &*select_compiler(&self.compiler);
         let mut state = State::new()?;
         let mut parsers = Parsers::new()?;
-        let mut parsers_previous = Parsers::new()?;
         let mut changelog = ChangeLog::new();
 
         changelog.fetch_changelog().await?;
         changelog.check_entry(&None)?;
         parsers.fetch_list(&None).await?;
-        parsers_previous
-            .fetch_list(&changelog.get_previous_tag())
-            .await?;
 
         let destination = PATHS.ts_parsers.join(".update-tmp");
         self.cleanup()?;
@@ -94,28 +90,27 @@ impl Subcommand for Update {
             c_println!(amber, "Parsers are not installed: {:?}", not_installed);
         }
 
-        let is_locked = &is_installed
-            .iter()
-            .filter(|lang| state.is_locked(lang))
-            .collect::<Vec<_>>();
-        let up_to_date = &is_installed
-            .iter()
-            .filter(|lang| state.is_tag_up_to_date(lang, &tag))
-            .collect::<Vec<_>>();
-
-        let (mut update_tags, mut update_tags_and_parsers) = (vec![], vec![]);
+        let mut is_locked = vec![];
+        let mut up_to_date = vec![];
+        let mut update_tags = vec![];
+        let mut update_tags_and_parsers = vec![];
 
         for lang in &is_installed {
-            if state.is_locked(lang) || state.is_tag_up_to_date(lang, &tag) {
+            if state.is_locked(lang) {
+                is_locked.push(lang);
                 continue;
             }
 
-            if parsers_previous.get_parser(lang).unwrap().revision
+            if state.is_tag_up_to_date(lang, &tag) {
+                up_to_date.push(lang);
+                continue;
+            }
+
+            match state.parsers.get(lang).unwrap().revision
                 == parsers.get_parser(lang).unwrap().revision
             {
-                update_tags.push(lang);
-            } else {
-                update_tags_and_parsers.push(lang);
+                true => update_tags.push(lang),
+                false => update_tags_and_parsers.push(lang),
             }
         }
 
@@ -144,9 +139,6 @@ impl Subcommand for Update {
 
         match self.method {
             ParserInstallMethod::Compile => {
-                if !update_tags_and_parsers.is_empty() {
-                    return Ok(());
-                }
                 parser_ops::check_compile_deps(compiler, &self.npm)?;
                 for (idx, lang) in update_tags_and_parsers.iter().enumerate() {
                     let parser = parsers.get_parser(lang).unwrap();

@@ -75,7 +75,6 @@ impl<'a> Zig<'a> {
                 args.push("x86_64-windows");
             }
             None => {
-                unreachable!();
                 // #[cfg(unix)]
                 // args.extend(Self::UNIX_ARGS);
             }
