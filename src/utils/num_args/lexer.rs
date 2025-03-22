@@ -1,14 +1,14 @@
-use std::{iter::Peekable, num::IntErrorKind, str::Chars};
+use std::{iter::Peekable, str::Chars};
 
 use super::errors::LexicalError;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum TokenKind {
     Space,
-    Int(u32),
+    Int(String),
     Range {
-        start: u32,
-        end: u32,
+        start: String,
+        end: String,
         inclusive: bool,
     },
 }
@@ -67,11 +67,11 @@ impl<'a> Lexer<'a> {
                     ));
                 }
                 '0'..='9' if !self.lexing_range => {
-                    let number = self.tokenize_numbers()?;
+                    let number = self.tokenize_numbers();
                     tokens.push(number);
                 }
                 '0'..='9' if self.lexing_range => {
-                    let number = self.tokenize_numbers()?;
+                    let number = self.tokenize_numbers();
                     let mut range = tokens.pop().unwrap();
 
                     let range_value = match range.kind {
@@ -125,7 +125,7 @@ impl<'a> Lexer<'a> {
             .collect::<Vec<Token>>())
     }
 
-    fn tokenize_numbers(&mut self) -> Result<Token, LexicalError> {
+    fn tokenize_numbers(&mut self) -> Token {
         let mut number = String::new();
         let start_pos = self.position;
 
@@ -135,40 +135,24 @@ impl<'a> Lexer<'a> {
             }
             self.advance();
         }
-
-        match number.parse::<u32>() {
-            Ok(val) => Ok(Token::new(
-                TokenKind::Int(val),
-                (start_pos, self.position - 1),
-            )),
-            Err(e) if e.kind() == &IntErrorKind::PosOverflow => Err(LexicalError::NumberTooLarge(
-                self.input_chars.clone(),
-                (start_pos, self.position - 1),
-            )),
-            Err(_) => Err(LexicalError::MalformedNumber(
-                self.input_chars.clone(),
-                (start_pos, self.position - 1),
-            )),
-        }
+        Token::new(TokenKind::Int(number), (start_pos, self.position - 1))
     }
 
     fn tokenize_range(&mut self, last_token: Option<&Token>) -> Result<Token, LexicalError> {
-        #[allow(unused_assignments)]
-        let mut start = 0;
-        #[allow(unused_assignments)]
-        let mut start_pos = 0;
+        let start: String;
+        let start_pos: usize;
 
         if let Some(token) = last_token {
-            match token.kind {
+            match &token.kind {
                 TokenKind::Int(val) => {
-                    start = val;
+                    start = val.clone();
                     start_pos = token.span.0
                 }
                 _ => {
                     return Err(LexicalError::NoRangeStart(
                         self.input_chars.clone(),
                         (self.position, self.position),
-                    ))
+                    ));
                 }
             }
         } else {
@@ -219,7 +203,7 @@ impl<'a> Lexer<'a> {
         Ok(Token::new(
             TokenKind::Range {
                 start,
-                end: 0,
+                end: "0".into(),
                 inclusive,
             },
             (start_pos, 0),

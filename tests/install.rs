@@ -1,7 +1,7 @@
 mod utils;
 
 use assert_cmd::Command;
-use utils::{check_backups, get_tag_by_index, OUTPUTS};
+use utils::{OUTPUTS, check_backups, get_tag_by_index};
 
 use crate::utils::{setup, validate_state};
 

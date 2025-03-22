@@ -121,7 +121,12 @@ impl Subcommand for Backups {
 
                 match ids {
                     Some(ids_str) => {
-                        let _ids = num_args::parse_args(ids_str)?;
+                        let ids = num_args::parse_args(ids_str)?;
+                        for id in &ids {
+                            backups_ops::delete_backup(&mut state, *id as usize)?;
+                        }
+                        state.commit()?;
+                        c_println!(green, "Backups deleted: {ids:?}");
                     }
                     None => {
                         anyhow::bail!("You must provide an ID or range of IDs to delete");

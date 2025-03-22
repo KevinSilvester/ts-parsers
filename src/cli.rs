@@ -1,6 +1,6 @@
 use clap::builder::{
-    styling::{AnsiColor, Effects},
     Styles,
+    styling::{AnsiColor, Effects},
 };
 
 use crate::subcommands::{Backups, Compile, Install, Lock, Subcommand, Uninstall, Unlock, Update};

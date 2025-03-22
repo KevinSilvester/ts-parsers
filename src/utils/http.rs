@@ -3,8 +3,8 @@ use std::io::Cursor;
 use std::path::Path;
 
 use lazy_static::lazy_static;
-use reqwest::redirect::Policy;
 use reqwest::Client;
+use reqwest::redirect::Policy;
 
 lazy_static! {
     static ref CLIENT: Client = Client::builder()

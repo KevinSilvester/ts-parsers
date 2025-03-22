@@ -66,7 +66,9 @@ pub fn get_tag_by_index(index: usize) -> String {
     #[cfg(windows)]
     let shell = "pwsh";
 
-    let script = format!("curl -s 'https://raw.githubusercontent.com/KevinSilvester/nvim-treesitter-parsers/master/CHANGELOG.json' | jq -r '.[{index}].tag'");
+    let script = format!(
+        "curl -s 'https://raw.githubusercontent.com/KevinSilvester/nvim-treesitter-parsers/master/CHANGELOG.json' | jq -r '.[{index}].tag'"
+    );
 
     let output = std::process::Command::new(shell)
         .args(["-c", &script])

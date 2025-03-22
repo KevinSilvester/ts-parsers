@@ -3,7 +3,7 @@ use chrono::Utc;
 use crate::{
     c_println,
     data::state::{RestorePoint, State},
-    utils::{archives, fs as ufs, PATHS},
+    utils::{PATHS, archives, fs as ufs},
 };
 
 pub fn create_backup(state: &mut State, tag: &str) -> anyhow::Result<()> {
@@ -125,12 +125,13 @@ mod tests {
             let path = entry.path();
             if path.is_file() {
                 assert_eq!(path.extension().unwrap(), "bz2");
-                assert!(path
-                    .file_name()
-                    .unwrap()
-                    .to_str()
-                    .unwrap()
-                    .contains("[test]"));
+                assert!(
+                    path.file_name()
+                        .unwrap()
+                        .to_str()
+                        .unwrap()
+                        .contains("[test]")
+                );
             }
         }
 

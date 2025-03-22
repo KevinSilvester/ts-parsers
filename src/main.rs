@@ -6,8 +6,8 @@ mod subcommands;
 mod utils;
 
 use std::sync::{
-    atomic::{AtomicBool, Ordering},
     Arc,
+    atomic::{AtomicBool, Ordering},
 };
 
 use crate::cli::Cli;
@@ -15,7 +15,7 @@ use crate::cli::Cli;
 use clap::Parser;
 use tokio::{
     signal,
-    sync::{mpsc, Mutex},
+    sync::{Mutex, mpsc},
 };
 
 enum Shutdown {
