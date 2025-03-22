@@ -39,8 +39,6 @@ pub enum LexicalError {
     UnexpectedEqual(Vec<char>, (usize, usize)),
     NoRangeStart(Vec<char>, (usize, usize)),
     NoRangeEnd(Vec<char>, (usize, usize)),
-    MalformedNumber(Vec<char>, (usize, usize)),
-    NumberTooLarge(Vec<char>, (usize, usize)),
 }
 
 impl Error for LexicalError {}
@@ -52,9 +50,7 @@ impl fmt::Display for LexicalError {
             | LexicalError::InvalidRange(_, _)
             | LexicalError::UnexpectedEqual(_, _)
             | LexicalError::NoRangeStart(_, _)
-            | LexicalError::NoRangeEnd(_, _)
-            | LexicalError::MalformedNumber(_, _)
-            | LexicalError::NumberTooLarge(_, _) => write!(f, "{}", self.construct_error()),
+            | LexicalError::NoRangeEnd(_, _) => write!(f, "{}", self.construct_error()),
         }
     }
 }
@@ -66,9 +62,7 @@ impl FancyError for LexicalError {
             | LexicalError::InvalidRange(input, span)
             | LexicalError::UnexpectedEqual(input, span)
             | LexicalError::NoRangeStart(input, span)
-            | LexicalError::NoRangeEnd(input, span)
-            | LexicalError::MalformedNumber(input, span)
-            | LexicalError::NumberTooLarge(input, span) => (input, *span),
+            | LexicalError::NoRangeEnd(input, span) => (input, *span),
         }
     }
 
@@ -106,18 +100,6 @@ impl FancyError for LexicalError {
                     span.0, span.1
                 )
             }
-            LexicalError::MalformedNumber(_, span) => {
-                format!(
-                    "{blue}@ position {}-{}{blue:#} {WHITE}- Malformed number{WHITE:#}",
-                    span.0, span.1
-                )
-            }
-            LexicalError::NumberTooLarge(_, span) => {
-                format!(
-                    "{blue}@ position {}-{}{blue:#} {WHITE}- Number too large. Largest possible number is 4_294_967_295{WHITE:#}",
-                    span.0, span.1
-                )
-            }
         }
     }
 
@@ -138,14 +120,14 @@ impl FancyError for LexicalError {
             LexicalError::NoRangeEnd(_, _) => {
                 "Place a number right after '..' or '..=' with no spaces".to_owned()
             }
-            LexicalError::MalformedNumber(_, _) => "Welp! ＼（〇_ｏ）／".to_owned(),
-            LexicalError::NumberTooLarge(_, _) => "Try a smaller number ;)".to_owned(),
         }
     }
 }
 
 #[derive(Debug)]
 pub enum ParserError {
+    MalformedNumber(Vec<char>, (usize, usize)),
+    NumberTooLarge(Vec<char>, (usize, usize)),
     RangeStartGreaterThanEnd(Vec<char>, (usize, usize)),
 }
 
@@ -154,7 +136,11 @@ impl Error for ParserError {}
 impl fmt::Display for ParserError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ParserError::RangeStartGreaterThanEnd(_, _) => write!(f, "{}", self.construct_error()),
+            ParserError::MalformedNumber(_, _)
+            | ParserError::NumberTooLarge(_, _)
+            | ParserError::RangeStartGreaterThanEnd(_, _) => {
+                write!(f, "{}", self.construct_error())
+            }
         }
     }
 }
@@ -162,7 +148,9 @@ impl fmt::Display for ParserError {
 impl FancyError for ParserError {
     fn error_ctx(&self) -> (&Vec<char>, (usize, usize)) {
         match self {
-            ParserError::RangeStartGreaterThanEnd(input, span) => (input, *span),
+            ParserError::NumberTooLarge(input, span)
+            | ParserError::MalformedNumber(input, span)
+            | ParserError::RangeStartGreaterThanEnd(input, span) => (input, *span),
         }
     }
 
@@ -170,6 +158,18 @@ impl FancyError for ParserError {
         let blue = BLUE.bold();
 
         match self {
+            ParserError::MalformedNumber(_, span) => {
+                format!(
+                    "{blue}@ position {}-{}{blue:#} {WHITE}- Malformed number{WHITE:#}",
+                    span.0, span.1
+                )
+            }
+            ParserError::NumberTooLarge(_, span) => {
+                format!(
+                    "{blue}@ position {}-{}{blue:#} {WHITE}- Number too large. Largest possible number is 4_294_967_295{WHITE:#}",
+                    span.0, span.1
+                )
+            }
             ParserError::RangeStartGreaterThanEnd(_, span) => {
                 format!(
                     "{blue}@ position {}-{}{blue:#} {WHITE}- Range start is greater than range end{WHITE:#}",
@@ -181,6 +181,8 @@ impl FancyError for ParserError {
 
     fn error_hint(&self) -> String {
         match self {
+            ParserError::MalformedNumber(_, _) => "Welp! ＼（〇_ｏ）／".to_owned(),
+            ParserError::NumberTooLarge(_, _) => "Try a smaller number ;)".to_owned(),
             ParserError::RangeStartGreaterThanEnd(_, _) => {
                 "Place the larger number in the left-hand side of the range (e.g. '10..=200') ;)"
                     .to_owned()

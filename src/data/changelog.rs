@@ -29,8 +29,7 @@ impl ChangeLog {
     }
 
     pub async fn fetch_changelog(&mut self) -> anyhow::Result<()> {
-        let url =
-            "https://raw.githubusercontent.com/KevinSilvester/nvim-treesitter-parsers/master/CHANGELOG.min.json";
+        let url = "https://raw.githubusercontent.com/KevinSilvester/nvim-treesitter-parsers/master/CHANGELOG.min.json";
         let res = reqwest::get(url).await?;
         self.entries = res.json().await?;
         Ok(())

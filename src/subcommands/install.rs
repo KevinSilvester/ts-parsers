@@ -1,6 +1,6 @@
 use crate::{
     c_println,
-    compiler::{select_compiler, CompilerOption},
+    compiler::{CompilerOption, select_compiler},
     data::{
         changelog::ChangeLog,
         parsers::Parsers,
@@ -10,7 +10,7 @@ use crate::{
         backups_ops,
         parser_ops::{self, NodePackageManagers},
     },
-    utils::{fs as ufs, PATHS},
+    utils::{PATHS, fs as ufs},
 };
 
 use super::{Langs, Subcommand};

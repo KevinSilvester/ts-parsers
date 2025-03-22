@@ -2,7 +2,7 @@ use std::path::Path;
 
 use crate::utils::command;
 
-use super::{zig::ZigTargets, Compiler};
+use super::{Compiler, zig::ZigTargets};
 
 #[derive(Debug)]
 pub struct CC<'a> {

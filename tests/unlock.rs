@@ -3,7 +3,7 @@ mod utils;
 mod unlock_specific {
     use assert_cmd::Command;
 
-    use crate::utils::{setup, validate_state, OUTPUTS};
+    use crate::utils::{OUTPUTS, setup, validate_state};
 
     #[test]
     fn test_installed() {
@@ -114,7 +114,7 @@ mod unlock_specific {
 mod unlock_wanted {
     use assert_cmd::Command;
 
-    use crate::utils::{setup, validate_state, OUTPUTS};
+    use crate::utils::{OUTPUTS, setup, validate_state};
 
     #[test]
     fn test_installed() {

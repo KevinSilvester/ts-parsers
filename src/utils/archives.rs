@@ -1,6 +1,6 @@
 use std::{fs::File, io::BufReader, path::Path};
 
-use bzip2::{read::BzDecoder, write::BzEncoder, Compression};
+use bzip2::{Compression, read::BzDecoder, write::BzEncoder};
 use flate2::read::GzDecoder;
 use tar::{Archive, Builder};
 

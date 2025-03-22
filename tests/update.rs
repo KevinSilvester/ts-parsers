@@ -3,7 +3,7 @@ mod utils;
 mod no_updates {
     use assert_cmd::Command;
 
-    use crate::utils::{setup, validate_state, OUTPUTS};
+    use crate::utils::{OUTPUTS, setup, validate_state};
 
     #[test]
     fn test_update_specific() {
@@ -72,7 +72,7 @@ mod no_updates {
 mod do_updates {
     use assert_cmd::Command;
 
-    use crate::utils::{check_backups, get_tag_by_index, setup, validate_state, OUTPUTS};
+    use crate::utils::{OUTPUTS, check_backups, get_tag_by_index, setup, validate_state};
 
     #[test]
     fn test_update_specific() {

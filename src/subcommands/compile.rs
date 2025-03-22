@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use crate::{
     c_println,
-    compiler::{select_compiler, CompilerOption, ZigTargets},
+    compiler::{CompilerOption, ZigTargets, select_compiler},
     data::{changelog::ChangeLog, parsers::Parsers},
     ops::parser_ops::{self, NodePackageManagers},
 };

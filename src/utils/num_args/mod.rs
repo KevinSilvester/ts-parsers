@@ -1,6 +1,6 @@
-pub mod errors;
-pub mod lexer;
-pub mod parser;
+mod errors;
+mod lexer;
+mod parser;
 
 use lexer::Lexer;
 use parser::Parser;
