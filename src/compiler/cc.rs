@@ -47,7 +47,7 @@ impl<'a> CC<'a> {
 #[async_trait::async_trait]
 impl Compiler for CC<'_> {
     fn get_name(&self) -> &str {
-        "clang"
+        self.command
     }
 
     async fn compile(

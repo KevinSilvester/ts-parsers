@@ -39,7 +39,7 @@ impl NodePackageManagers {
 }
 
 pub fn check_compile_deps(
-    compiler: &dyn Compiler,
+    compiler: &(impl Compiler + ?Sized),
     npm: &NodePackageManagers,
 ) -> anyhow::Result<()> {
     command::check_exists(compiler.get_name())?;
@@ -63,7 +63,7 @@ pub fn uninstall(lang: &str, destination: &Path) -> anyhow::Result<()> {
 pub async fn compile(
     lang: &str,
     parser_info: &ParserInfo,
-    compiler: &dyn Compiler,
+    compiler: &(impl Compiler + ?Sized),
     target: &Option<ZigTargets>,
     npm: &NodePackageManagers,
     from_grammar: bool,
