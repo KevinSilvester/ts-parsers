@@ -17,7 +17,7 @@ const NVIM_DATA_DIR: &str = "nvim-data";
 const NVIM_DATA_DIR: &str = "nvim";
 
 impl Paths {
-    #[cfg(not(test))]
+    #[cfg(not(debug_assertions))]
     pub fn new() -> Self {
         use cfg_if::cfg_if;
 
@@ -47,7 +47,7 @@ impl Paths {
         }
     }
 
-    #[cfg(test)]
+    #[cfg(debug_assertions)]
     pub fn new() -> Self {
         Self {
             wanted_parsers: PathBuf::from("tests")

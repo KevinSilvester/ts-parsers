@@ -48,12 +48,12 @@ async fn main() -> anyhow::Result<()> {
             shutdown_c.store(true, Ordering::Relaxed);
         },
         shutdown = shutdown_rx.recv() => match shutdown.unwrap_or(Shutdown::Borked) {
-            Shutdown::Graceful => shutdown_c.store(true, Ordering::Relaxed),
-            Shutdown::Borked => shutdown_c.store(false, Ordering::Relaxed),
+            Shutdown::Graceful => shutdown_c.store(true, Ordering::SeqCst),
+            Shutdown::Borked => shutdown_c.store(false, Ordering::SeqCst),
         },
     };
 
-    match shutdown.load(Ordering::Relaxed) {
+    match shutdown.load(Ordering::SeqCst) {
         true => {
             c_println!(green, "Gracefully shutting down... \\(￣︶￣*\\))");
             std::mem::drop(cmd);

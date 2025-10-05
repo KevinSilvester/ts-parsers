@@ -67,13 +67,8 @@ impl Subcommand for Backups {
                 let mut builder = TableBuilder::default();
                 builder.push_record(["ID", "Date", "File", "FileSize"]);
 
-                for (i, (date, file, size)) in backups.iter().enumerate() {
-                    builder.push_record([
-                        (i + 1).to_string(),
-                        date.to_owned(),
-                        file.to_owned(),
-                        size.to_owned(),
-                    ]);
+                for (id, date, file, size) in backups.iter() {
+                    builder.push_record([id.to_string(), date.into(), file.into(), size.into()]);
                 }
 
                 let mut table = builder.build();

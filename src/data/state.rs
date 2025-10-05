@@ -7,7 +7,7 @@ use byte_unit::{Byte, UnitType};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-use crate::utils::PATHS;
+use crate::{c_println, utils::PATHS};
 
 use super::parsers::ParserInfo;
 
@@ -175,9 +175,9 @@ impl State {
         self.restore_points.remove(id);
     }
 
-    pub fn list_restore_points(&self) -> anyhow::Result<Vec<(String, String, String)>> {
+    pub fn list_restore_points(&self) -> anyhow::Result<Vec<(usize, String, String, String)>> {
         let mut restore_points = vec![];
-        for restore_point in self.restore_points.iter() {
+        for (idx, restore_point) in self.restore_points.iter().enumerate() {
             let date = restore_point.date.format("%F %H:%M:%S").to_string();
             let file_name = restore_point
                 .location
@@ -186,9 +186,16 @@ impl State {
                 .to_str()
                 .unwrap()
                 .to_string();
-            let file_size = Byte::from_u64(std::fs::metadata(&restore_point.location)?.len())
-                .get_appropriate_unit(UnitType::Binary);
-            restore_points.push((date, file_name, format!("{file_size:.3}")));
+            let file_metadata = match std::fs::metadata(&restore_point.location) {
+                Ok(md) => md,
+                Err(_) => {
+                    c_println!(amber, "[WARNING]: Backup not found '{file_name}'");
+                    continue;
+                }
+            };
+            let file_size =
+                Byte::from_u64(file_metadata.len()).get_appropriate_unit(UnitType::Binary);
+            restore_points.push((idx, date, file_name, format!("{file_size:.3}")));
         }
         Ok(restore_points)
     }
