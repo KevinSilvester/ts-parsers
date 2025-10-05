@@ -139,11 +139,13 @@ impl<'a> Lexer<'a> {
     }
 
     fn tokenize_range(&mut self, last_token: Option<&Token>) -> Result<Token, LexicalError> {
-        let start: String;
-        let start_pos: usize;
+        #[allow(unused_assignments)]
+        let mut start = String::new();
+        #[allow(unused_assignments)]
+        let mut start_pos = 0;
 
         if let Some(token) = last_token {
-            match &token.kind {
+            match token.kind.clone() {
                 TokenKind::Int(val) => {
                     start = val.clone();
                     start_pos = token.span.0
@@ -203,7 +205,7 @@ impl<'a> Lexer<'a> {
         Ok(Token::new(
             TokenKind::Range {
                 start,
-                end: "0".into(),
+                end: String::new(),
                 inclusive,
             },
             (start_pos, 0),

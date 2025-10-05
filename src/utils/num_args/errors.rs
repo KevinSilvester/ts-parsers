@@ -126,9 +126,9 @@ impl FancyError for LexicalError {
 
 #[derive(Debug)]
 pub enum ParserError {
+    RangeStartGreaterThanEnd(Vec<char>, (usize, usize)),
     MalformedNumber(Vec<char>, (usize, usize)),
     NumberTooLarge(Vec<char>, (usize, usize)),
-    RangeStartGreaterThanEnd(Vec<char>, (usize, usize)),
 }
 
 impl Error for ParserError {}
@@ -136,11 +136,9 @@ impl Error for ParserError {}
 impl fmt::Display for ParserError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ParserError::MalformedNumber(_, _)
-            | ParserError::NumberTooLarge(_, _)
-            | ParserError::RangeStartGreaterThanEnd(_, _) => {
-                write!(f, "{}", self.construct_error())
-            }
+            ParserError::RangeStartGreaterThanEnd(_, _)
+            | ParserError::MalformedNumber(_, _)
+            | ParserError::NumberTooLarge(_, _) => write!(f, "{}", self.construct_error()),
         }
     }
 }
@@ -148,9 +146,9 @@ impl fmt::Display for ParserError {
 impl FancyError for ParserError {
     fn error_ctx(&self) -> (&Vec<char>, (usize, usize)) {
         match self {
-            ParserError::NumberTooLarge(input, span)
+            ParserError::RangeStartGreaterThanEnd(input, span)
             | ParserError::MalformedNumber(input, span)
-            | ParserError::RangeStartGreaterThanEnd(input, span) => (input, *span),
+            | ParserError::NumberTooLarge(input, span) => (input, *span),
         }
     }
 
@@ -158,6 +156,12 @@ impl FancyError for ParserError {
         let blue = BLUE.bold();
 
         match self {
+            ParserError::RangeStartGreaterThanEnd(_, span) => {
+                format!(
+                    "{blue}@ position {}-{}{blue:#} {WHITE}- Range start is greater than range end{WHITE:#}",
+                    span.0, span.1
+                )
+            }
             ParserError::MalformedNumber(_, span) => {
                 format!(
                     "{blue}@ position {}-{}{blue:#} {WHITE}- Malformed number{WHITE:#}",
@@ -170,23 +174,17 @@ impl FancyError for ParserError {
                     span.0, span.1
                 )
             }
-            ParserError::RangeStartGreaterThanEnd(_, span) => {
-                format!(
-                    "{blue}@ position {}-{}{blue:#} {WHITE}- Range start is greater than range end{WHITE:#}",
-                    span.0, span.1
-                )
-            }
         }
     }
 
     fn error_hint(&self) -> String {
         match self {
-            ParserError::MalformedNumber(_, _) => "Welp! ＼（〇_ｏ）／".to_owned(),
-            ParserError::NumberTooLarge(_, _) => "Try a smaller number ;)".to_owned(),
             ParserError::RangeStartGreaterThanEnd(_, _) => {
                 "Place the larger number in the left-hand side of the range (e.g. '10..=200') ;)"
                     .to_owned()
             }
+            ParserError::MalformedNumber(_, _) => "Welp! ＼（〇_ｏ）／".to_owned(),
+            ParserError::NumberTooLarge(_, _) => "Try a smaller number ;)".to_owned(),
         }
     }
 }

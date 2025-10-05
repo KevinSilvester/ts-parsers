@@ -18,20 +18,51 @@ impl<'a> Parser<'a> {
         }
     }
 
+    fn parse_num(&mut self, num: &String, span: &(usize, usize)) -> Result<u32, ParserError> {
+        match num.parse::<u32>() {
+            Ok(val) => Ok(val),
+            Err(e) if e.kind() == &IntErrorKind::PosOverflow => Err(ParserError::NumberTooLarge(
+                self.input_chars.clone(),
+                span.to_owned(),
+            )),
+            Err(_) => Err(ParserError::MalformedNumber(
+                self.input_chars.clone(),
+                span.to_owned(),
+            )),
+        }
+    }
+
     pub fn parse(&mut self) -> Result<Vec<u32>, ParserError> {
         let mut nums = vec![];
 
-        while let Some(token) = self.tokens.peek() {
-            match &token.kind {
-                TokenKind::Int(_) => {
-                    nums.push(self.parse_int()?);
+        for token in self.tokens.by_ref() {
+            match token.kind.clone() {
+                TokenKind::Int(val) => {
+                    nums.push(self.parse_num(&val, &token.span)?);
                 }
                 TokenKind::Range {
                     start: _,
                     end: _,
                     inclusive: _,
                 } => {
-                    nums.extend(self.parse_range()?);
+                    let start = self.parse_num(&start, &token.span)?;
+                    let end = self.parse_num(&end, &token.span)?;
+                    if start >= end {
+                        return Err(ParserError::RangeStartGreaterThanEnd(
+                            self.input_chars.clone(),
+                            token.span,
+                        ));
+                    }
+
+                    if inclusive {
+                        for num in start..=end {
+                            nums.push(num);
+                        }
+                    } else {
+                        for num in start..end {
+                            nums.push(num);
+                        }
+                    }
                 }
                 _ => unreachable!(),
             }
