@@ -105,8 +105,8 @@ fn test_compile_with_zig() {
 }
 
 #[test]
-fn test_from_grammar_compile() {
-    let dir = OUTPUTS.join("test-from-grammar-and-compile");
+fn test_compile_from_grammar() {
+    let dir = OUTPUTS.join("test-compile-from-grammar");
     setup(&dir);
 
     let mut cmd = Command::cargo_bin("ts-parsers").unwrap();

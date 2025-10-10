@@ -102,7 +102,7 @@ pub fn check_backups(dir: &Path, num: i32, tag: &str) {
 
         assert!(path.is_file());
         assert!(name.contains(tag));
-        assert!(name.ends_with(".bz2"));
+        assert!(name.ends_with(".xz"));
 
         count += 1;
     }

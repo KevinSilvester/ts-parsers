@@ -12,7 +12,7 @@ pub fn create_backup(state: &mut State, tag: &str) -> anyhow::Result<()> {
     let backup_dir = PATHS.ts_parsers.join("backups");
     let state_bak = PATHS.ts_parsers.join("state-parsers.json");
     let archive_path = backup_dir.join(format!(
-        "backup-[{}]-[{tag}].tar.bz2",
+        "backup-[{}]-[{tag}].tar.xz",
         timestamp.format("%F_%H-%M-%S"),
     ));
 
@@ -27,7 +27,7 @@ pub fn create_backup(state: &mut State, tag: &str) -> anyhow::Result<()> {
 
     state.create_backup(&state_bak)?;
 
-    archives::create_tar_bz2(&archive_path, &[&parsers_dir, &state_bak])?;
+    archives::create_tar_xz(&archive_path, &[&parsers_dir, &state_bak])?;
 
     state.append_restore_point(RestorePoint {
         date: timestamp,
@@ -43,7 +43,16 @@ pub fn restore_backup(state: &mut State, id: usize) -> anyhow::Result<()> {
     let restore_point = state.get_restore_point(id)?;
     let tmp_dir = tempfile::tempdir()?;
 
-    archives::extract_tar_bz2(&restore_point.location, tmp_dir.path())?;
+    match restore_point.location.extension().and_then(|s| s.to_str()) {
+        Some("xz") => archives::extract_tar_xz(&restore_point.location, tmp_dir.path())?,
+        Some("bz2") => archives::extract_tar_bz2(&restore_point.location, tmp_dir.path())?,
+        _ => {
+            return Err(anyhow::anyhow!(
+                "Unsupported archive format: {:?}",
+                restore_point.location
+            ));
+        }
+    }
     ufs::remove_all(PATHS.ts_parsers.join("parser"))?;
     std::fs::create_dir_all(PATHS.ts_parsers.join("parser"))?;
 
@@ -124,7 +133,7 @@ mod tests {
             let entry = entry.unwrap();
             let path = entry.path();
             if path.is_file() {
-                assert_eq!(path.extension().unwrap(), "bz2");
+                assert_eq!(path.extension().unwrap(), "xz");
                 assert!(
                     path.file_name()
                         .unwrap()
