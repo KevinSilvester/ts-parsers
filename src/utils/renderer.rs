@@ -60,8 +60,7 @@ impl<W: Write> Renderer<W> {
         };
 
         for line in queue {
-            let mut l = line.clone();
-            l.truncate(width as usize);
+            let l: String = line.chars().take(width as usize).collect();
             writeln!(&mut self.stdout, "{l}")?;
         }
 
